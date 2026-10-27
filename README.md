@@ -1,21 +1,40 @@
 # Escapa del almacén
 
-Escape room web sobre **condiciones de seguridad en el trabajo** (Actividad 2 · U2 · SMR).
-Se juega en el navegador, de forma individual; la profesora cuelga el enlace en Aules.
+Un escape room web sobre condiciones de seguridad en el trabajo. Estás encerrado en un almacén que incumple las normas, y para abrir el candado de la salida tienes que corregir sus riesgos antes de que se acabe el tiempo. Hecho para el ciclo de SMR.
 
-- 4 pruebas: cuadro eléctrico, altillo, papelera ardiendo y pasillo bloqueado (código del candado: 5941).
-- Prueba extra opcional de señales de seguridad (+5 s por acierto).
-- 4 minutos, −10 s por fallo, estrellas y récord al final.
-- Fuentes: INSST (riesgo eléctrico, incendios), RD 486/1997 (lugares de trabajo) y RD 485/1997 (señalización).
+**En vivo:** https://escapa-del-almacen.web.app
 
-## Publicar
+## Tecnologías
+
+- HTML5
+- CSS3 (Grid, propiedades personalizadas, media queries)
+- JavaScript (sin frameworks ni dependencias)
+- Web Audio API
+- Firebase Hosting
+
+## Qué tiene de particular
+
+- **Cuatro pruebas y una extra**: riesgo eléctrico, caídas a distinto nivel, incendios y vías de evacuación, más una prueba opcional de señales de seguridad que suma tiempo.
+- **Contenido con fuente**: cada dato sale del INSST o de los Reales Decretos 486/1997 (lugares de trabajo) y 485/1997 (señalización), y el repaso final cita la fuente de cada uno.
+- **Sonido sin archivos**: música, efectos, fuego y sirena se generan en el navegador con Web Audio.
+- **Se juega con teclado**, con atajos para todo, y respeta `prefers-reduced-motion`.
+- **Adaptado a móvil**, en vertical y en horizontal.
+- **Sin base de datos ni cookies**: el récord se guarda solo en el navegador de cada jugador.
+
+## Estructura
 
 ```
-firebase login
+firebase.json     Configuración de Firebase Hosting y cabeceras de caché
+.firebaserc       A qué proyecto de Firebase se despliega
+public/           Todo lo que se publica
+```
+
+## Cómo desplegarlo
+
+```bash
 firebase deploy --only hosting
 ```
 
-Dirección: https://escapa-del-almacen.web.app
+---
 
-Si el ID del proyecto en Firebase no es `escapa-del-almacen`, cámbialo en `.firebaserc`
-y en las etiquetas `og:url` y `og:image` de `public/index.html`.
+Hecho por **Marcos Martínez** — desarrollador web en Valencia.
