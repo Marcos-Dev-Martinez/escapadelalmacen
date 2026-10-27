@@ -1,0 +1,795 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Escape room sobre condiciones de seguridad en el trabajo: corrige los riesgos del almacén, consigue las 4 cifras del candado y sal antes de que se acabe el tiempo.">
+<meta name="theme-color" content="#0F1218">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta property="og:type"        content="website">
+<meta property="og:url"         content="https://escapa-del-almacen.web.app/">
+<meta property="og:title"       content="Escapa del almacén · Condiciones de seguridad">
+<meta property="og:description" content="Escape room sobre condiciones de seguridad en el trabajo: corrige los riesgos del almacén, consigue las 4 cifras del candado y sal antes de que se acabe el tiempo.">
+<meta property="og:image"       content="https://escapa-del-almacen.web.app/og-image.jpg">
+<title>Escapa del almacén</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Barlow:wght@400;600;700&display=swap">
+<style>
+/* Layout: HUD arriba (tiempo · candado de 4 cifras · progreso); debajo, la sala del almacén en 16:9 con objetos que se pulsan; cada objeto abre un minijuego en un panel sobre la sala. Un solo look oscuro a propósito: almacén iluminado solo por las luces de emergencia. */
+:root{
+  --night:#0F1218; --wall:#1B212C; --floor:#141921; --panel:#1C2230; --line:#2E3747;
+  --text:#F4F1E8; --muted:#A7AEBB;
+  --go:#1E9A5B; --go-soft:#7BE0A8; --stop:#D2252F; --stop-soft:#FF8A8F; --warn:#F2C230; --info:#3B7BD6;
+  --display:'Oswald','Arial Narrow',Impact,sans-serif;
+  --body:'Barlow','Segoe UI',Arial,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--night);color:var(--text);font-family:var(--body);overflow:hidden;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.beacon{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse 70% 45% at 50% 0%,rgba(210,37,47,.20),transparent 70%);animation:beacon 4s ease-in-out infinite}
+body.alarm .beacon{background:radial-gradient(ellipse 90% 70% at 50% 0%,rgba(210,37,47,.55),transparent 75%);animation-duration:.7s}
+body.free .beacon{background:radial-gradient(ellipse 80% 70% at 85% 50%,rgba(30,154,91,.45),transparent 70%);animation:none}
+@keyframes beacon{0%,100%{opacity:.4}50%{opacity:1}}
+.tape{position:fixed;left:0;right:0;bottom:0;height:18px;z-index:1;background:repeating-linear-gradient(-45deg,var(--warn) 0 18px,#111 18px 36px)}
+
+.app{position:relative;z-index:2;height:100%;display:grid;grid-template-rows:auto minmax(0,1fr);gap:clamp(8px,1.6vh,22px);
+  padding-block:clamp(10px,2.2vh,28px) 30px;max-width:1760px;margin:0 auto}
+.hud{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.timer{font-family:var(--display);font-weight:700;font-size:clamp(38px,5.2vw,96px);line-height:1;font-variant-numeric:tabular-nums;min-width:4ch}
+.timer small{display:block;font-family:var(--body);font-size:clamp(12px,1vw,18px);font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.timer.low{color:var(--stop);animation:pulse 1s ease-in-out infinite}
+.timer.paused #clock{opacity:.35}
+.timer .pen{font-size:.4em;color:var(--stop-soft);margin-left:.3em;opacity:0;transition:opacity .2s}
+.timer .pen.show{opacity:1}
+@keyframes pulse{50%{transform:scale(1.05)}}
+.lock{display:flex;align-items:center;gap:clamp(10px,1.2vw,20px)}
+.lock>svg{width:clamp(36px,3.8vw,70px);height:auto;overflow:visible}
+.shackle{transition:transform .8s cubic-bezier(.3,1.6,.5,1);transform-origin:70% 100%}
+.lock.open .shackle{transform:translateY(-14px) rotate(-28deg)}
+.slots{display:flex;gap:clamp(6px,.8vw,14px)}
+.slot{display:grid;justify-items:center;gap:4px}
+.slot b{width:clamp(42px,4.2vw,80px);height:clamp(54px,5.4vw,100px);border-radius:10px;border:3px solid var(--line);background:#0B0E13;
+  display:grid;place-items:center;font-family:var(--display);font-size:clamp(32px,3.6vw,72px);color:#3A4252;font-variant-numeric:tabular-nums;transition:.3s}
+.slot span{font-size:clamp(10px,.8vw,15px);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.slot.on b{border-color:var(--warn);color:var(--warn);box-shadow:0 0 22px rgba(242,194,48,.35)}
+.lock.open .slot.on b{border-color:var(--go);color:var(--go-soft);box-shadow:0 0 26px rgba(30,154,91,.5)}
+.progress{font-family:var(--display);font-size:clamp(14px,1.2vw,22px);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);text-align:right}
+.progress b{display:block;font-size:2em;color:var(--text);letter-spacing:0}
+
+.stage{position:relative;min-height:0;display:grid;place-items:center}
+.screen{width:100%;max-width:1500px;display:grid;gap:clamp(12px,2.2vh,30px);animation:enter .4s ease-out both}
+@keyframes enter{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.eyebrow{font-family:var(--display);font-weight:500;letter-spacing:.18em;text-transform:uppercase;font-size:clamp(14px,1.3vw,24px);color:var(--warn);margin:0;display:flex;gap:.6em;align-items:center}
+.eyebrow::before{content:"";width:1.6em;height:.5em;background:repeating-linear-gradient(-45deg,var(--warn) 0 6px,transparent 6px 12px)}
+h1,h2,h3{font-family:var(--display);font-weight:700;margin:0;line-height:1.03;text-wrap:balance}
+h1{font-size:clamp(46px,7.4vw,140px);text-transform:uppercase}
+h2{font-size:clamp(28px,3.4vw,62px)}
+.lead{font-size:clamp(19px,1.8vw,34px);line-height:1.35;color:var(--muted);max-width:44ch;margin:0}
+.lead b{color:var(--text)}
+.btn{all:unset;box-sizing:border-box;cursor:pointer;justify-self:start;display:inline-flex;align-items:center;gap:.6em;font-family:var(--display);font-weight:700;
+  text-transform:uppercase;letter-spacing:.06em;font-size:clamp(18px,1.8vw,32px);padding:.45em 1em;border-radius:12px;background:var(--warn);color:#14161C;transition:transform .15s}
+.btn:hover{transform:translateY(-2px)} .btn:focus-visible{outline:4px solid var(--text);outline-offset:4px}
+.btn.green{background:var(--go);color:#fff} .btn.ghost{background:transparent;color:var(--text);border:2px solid var(--line)}
+.btn[disabled]{opacity:.4;pointer-events:none}
+.btn kbd{font-family:var(--body);font-size:.6em;border:2px solid currentColor;border-radius:6px;padding:.05em .4em;opacity:.8}
+.split{display:grid;grid-template-columns:1.25fr 1fr;gap:clamp(20px,4vw,80px);align-items:center}
+
+/* ---------- sala ---------- */
+.room{position:relative;width:min(100%,calc((100vh - 270px) * 16 / 9));aspect-ratio:16/9;border-radius:18px;overflow:hidden;border:3px solid var(--line);
+  box-shadow:0 30px 80px rgba(0,0,0,.5);animation:enter .4s ease-out both}
+.room>svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.hot{all:unset;position:absolute;cursor:pointer;border-radius:16px;display:grid;place-items:end center}
+.hot::before{content:"";position:absolute;inset:-6px;border-radius:18px;border:3px dashed rgba(242,194,48,.85);animation:ring 1.6s ease-in-out infinite}
+.hot:hover::before,.hot:focus-visible::before{border-style:solid;border-color:var(--warn);background:rgba(242,194,48,.10)}
+.hot .tag{transform:translateY(calc(100% + 12px));white-space:nowrap;font-family:var(--display);font-weight:700;letter-spacing:.04em;
+  font-size:clamp(13px,1.15vw,22px);background:#0B0E13;border:2px solid var(--warn);color:var(--text);padding:.2em .6em;border-radius:8px;display:flex;gap:.45em;align-items:center}
+.hot .tag kbd{font-family:var(--display);color:var(--warn)}
+.hot.done::before{border:3px solid var(--go);animation:none;background:rgba(30,154,91,.12)}
+.hot.done .tag{border-color:var(--go)}
+.hot.done .tag::after{content:"✓";color:var(--go-soft)}
+@keyframes ring{50%{transform:scale(1.04);opacity:.6}}
+.hint{margin:0;max-width:min(100%,1100px);text-align:center;font-size:clamp(13px,1.15vw,22px);line-height:1.35;color:var(--muted)}
+.hint b{color:var(--text)}
+.hot.up{place-items:start center} .hot.up .tag{transform:translateY(calc(-100% - 12px))}
+.hot.bonus::before{border-color:rgba(123,224,168,.9)} .hot.bonus .tag{border-color:var(--go-soft)}
+.timer .pen.plus{color:var(--go-soft)}
+/* señales */
+.signgame{display:grid;grid-template-columns:minmax(0,.7fr) minmax(0,1.6fr);gap:clamp(16px,3vw,48px);align-items:center}
+.bigsign{justify-self:center;width:min(100%,240px);animation:enter .35s ease-out both}
+.bigsign svg{width:100%;height:auto;display:block}
+.dots{display:flex;gap:8px}.dots i{width:14px;height:14px;border-radius:50%;background:var(--line)}.dots i.ok{background:var(--go)}.dots i.ko{background:var(--stop)}.dots i.now{background:var(--warn)}
+/* estrellas */
+.stars{display:flex;gap:.15em;font-size:clamp(40px,4.6vw,84px);line-height:1}
+.stars span{color:#2E3747}.stars span.on{color:var(--warn);text-shadow:0 0 20px rgba(242,194,48,.55);animation:pop .5s cubic-bezier(.3,1.6,.5,1) both}
+.stars span:nth-child(2){animation-delay:.2s}.stars span:nth-child(3){animation-delay:.4s}
+@keyframes pop{from{transform:scale(0)}to{transform:none}}
+.best{font-size:clamp(14px,1.2vw,22px);color:var(--muted);margin:0}.best b{color:var(--warn)}
+
+/* ---------- panel de minijuego ---------- */
+.panel{position:absolute;inset:0;z-index:10;display:grid;place-items:center;background:rgba(8,10,14,.82);backdrop-filter:blur(4px);animation:enter .3s ease-out both}
+.panel .box{width:min(1400px,100%);max-height:100%;overflow:auto;background:var(--panel);border:3px solid var(--line);border-radius:20px;
+  padding:clamp(16px,2.4vw,40px);display:grid;gap:clamp(12px,1.8vh,24px)}
+.panel .top{display:flex;justify-content:space-between;gap:16px;align-items:start;flex-wrap:wrap}
+.ins{font-size:clamp(17px,1.6vw,30px);color:var(--muted);margin:0;line-height:1.35}
+.ins b{color:var(--text)}
+.fb{display:flex;gap:.6em;align-items:flex-start;font-size:clamp(17px,1.6vw,30px);line-height:1.35;border-radius:12px;padding:.6em .9em}
+.fb:empty{display:none}
+.fb.ok{background:rgba(30,154,91,.16);border-left:8px solid var(--go)} .fb.ko{background:rgba(210,37,47,.16);border-left:8px solid var(--stop)}
+.fb .t{font-family:var(--display);font-weight:700;text-transform:uppercase;white-space:nowrap}
+.fb.ok .t{color:var(--go-soft)} .fb.ko .t{color:var(--stop-soft)}
+.fb small{display:block;color:var(--muted);font-size:.72em;margin-top:.2em}
+.prize{display:flex;align-items:center;gap:16px;font-family:var(--display);font-size:clamp(18px,1.6vw,30px);text-transform:uppercase;letter-spacing:.06em}
+.prize b{font-size:2.6em;line-height:1;color:var(--warn);text-shadow:0 0 22px rgba(242,194,48,.6)}
+.actions{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+
+.chip{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;gap:.55em;min-width:0;background:#141924;border:3px solid var(--line);border-radius:14px;
+  padding:.55em .8em;font-weight:700;font-size:clamp(17px,1.6vw,30px);line-height:1.2;transition:transform .12s,border-color .15s,background .15s}
+@media (hover:hover){.chip:hover{border-color:var(--info);transform:translateY(-2px)}} .chip:focus-visible{outline:4px solid var(--warn);outline-offset:3px}
+.chip .k{flex:none;display:grid;place-items:center;width:1.7em;height:1.7em;border-radius:9px;background:#0B0E13;font-family:var(--display);font-size:.8em;color:var(--warn)}
+.chip.sel{border-color:var(--warn);background:#2A2510}
+.chip.right{border-color:var(--go);background:#11301F;cursor:default} .chip.right .k{background:var(--go);color:#fff}
+.chip.wrong{border-color:var(--stop);background:#3A1316}
+.shake{animation:shake .42s}
+@keyframes shake{20%,60%{transform:translateX(-10px)}40%,80%{transform:translateX(10px)}}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.seq{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.seq div{min-height:3.4em;border:3px dashed var(--line);border-radius:12px;display:grid;place-items:center;text-align:center;padding:.4em;
+  font-size:clamp(14px,1.2vw,22px);font-weight:700;color:var(--muted)}
+.seq div.f{border-style:solid;border-color:var(--go);background:#11301F;color:var(--text)}
+.seq div i{font-style:normal;font-family:var(--display);color:var(--warn);display:block;font-size:1.3em}
+
+/* barandilla */
+.rail{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:clamp(16px,3vw,48px);align-items:center}
+.rail svg{width:100%;height:auto;max-height:40vh}
+.meter{display:grid;gap:14px}
+.meter output{font-family:var(--display);font-size:clamp(56px,7vw,130px);line-height:1;font-variant-numeric:tabular-nums}
+.meter output.bad{color:var(--stop-soft)} .meter output.good{color:var(--go-soft)}
+input[type=range]{width:100%;height:44px;accent-color:var(--warn);cursor:pointer}
+input[type=range]:focus-visible{outline:4px solid var(--warn);outline-offset:4px;border-radius:8px}
+.steps{display:flex;gap:10px;flex-wrap:wrap}
+
+/* fuego */
+.firegame{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.6fr);gap:clamp(16px,3vw,48px);align-items:center}
+.bigfire{--s:1;justify-self:center;width:min(100%,300px);transform:scale(var(--s));transform-origin:50% 100%;transition:transform .4s cubic-bezier(.3,1.6,.5,1)}
+.bigfire svg{width:100%;height:auto;display:block;overflow:visible}
+.bigfire .f1{transform-origin:50% 95%;animation:flick .5s ease-in-out infinite alternate}
+.bigfire .f2{transform-origin:50% 95%;animation:flick .35s ease-in-out infinite alternate-reverse}
+.bigfire .flames{transition:opacity .9s,transform .9s;transform-origin:50% 95%}
+.bigfire .steam{opacity:0;transition:opacity .6s,transform 1.4s;transform-origin:50% 100%}
+.bigfire.out .flames{opacity:0;transform:scale(.3)}
+.bigfire.out .steam{opacity:.8;transform:translateY(-60px)}
+@keyframes flick{from{transform:scale(1,1)}to{transform:scale(.94,1.07)}}
+/* pasillo */
+.corridor{position:relative;width:min(100%,calc(40vh * 21 / 8));justify-self:center;aspect-ratio:21/8;border-radius:14px;overflow:hidden;border:2px solid var(--line);background:linear-gradient(#1B212C 0 55%,#141921 55%)}
+.corridor .lane{position:absolute;left:4%;right:14%;top:58%;bottom:6%;border:3px dashed rgba(30,154,91,.7);border-radius:10px}
+.corridor .lane::after{content:"Vía de evacuación →";position:absolute;left:12px;bottom:6px;font-family:var(--display);color:var(--go-soft);font-size:clamp(13px,1.1vw,20px);letter-spacing:.06em}
+.corridor .exit{position:absolute;right:3%;top:22%;width:9%;bottom:6%;background:var(--go);border-radius:4px}
+.obj{all:unset;position:absolute;cursor:pointer;display:grid;place-items:center;transition:transform .6s cubic-bezier(.5,-0.3,.4,1.3),opacity .6s}
+.obj:focus-visible{outline:4px solid var(--warn);outline-offset:4px;border-radius:8px}
+.obj svg{width:100%;height:100%;overflow:visible}
+.obj.gone{transform:translateY(-140%) rotate(-20deg);opacity:0;pointer-events:none}
+.obj .n{position:absolute;top:-8px;left:-8px;width:1.6em;height:1.6em;border-radius:50%;background:#0B0E13;border:2px solid var(--warn);color:var(--warn);
+  font-family:var(--display);font-size:clamp(12px,1vw,18px);display:grid;place-items:center}
+
+/* teclado de la puerta */
+.keypad{display:grid;grid-template-columns:repeat(3,minmax(0,90px));gap:10px;justify-content:start}
+.keypad button{all:unset;cursor:pointer;height:72px;border-radius:12px;background:#141924;border:3px solid var(--line);display:grid;place-items:center;
+  font-family:var(--display);font-size:34px;font-weight:700}
+.keypad button:hover{border-color:var(--warn)} .keypad button:focus-visible{outline:4px solid var(--warn)}
+.code{display:flex;gap:10px}
+.code span{width:clamp(56px,5vw,90px);height:clamp(70px,6.2vw,110px);border-radius:12px;border:3px solid var(--line);background:#0B0E13;display:grid;place-items:center;
+  font-family:var(--display);font-size:clamp(40px,4vw,76px);color:var(--warn)}
+.doorgame{display:grid;grid-template-columns:auto minmax(0,1fr);gap:clamp(20px,4vw,64px);align-items:center}
+
+/* finales */
+.door{width:100%;max-width:420px;justify-self:center;perspective:1200px}
+.door svg{width:100%;height:auto;display:block}
+.leaf{transform-origin:12% 50%;transition:transform 1.6s cubic-bezier(.5,0,.2,1)}
+.door.open .leaf{transform:rotateY(-78deg)}
+.door .glow{opacity:0;transition:opacity 1.2s .4s} .door.open .glow{opacity:1}
+.stats{display:flex;gap:clamp(16px,3vw,56px);flex-wrap:wrap}
+.stat b{display:block;font-family:var(--display);font-size:clamp(42px,5vw,96px);line-height:1;font-variant-numeric:tabular-nums}
+.stat span{font-size:clamp(13px,1.1vw,20px);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(250px,100%),1fr));gap:clamp(10px,1.2vw,18px)}
+.card{background:var(--panel);border:2px solid var(--line);border-radius:14px;padding:clamp(12px,1.3vw,22px);display:grid;gap:.35em;align-content:start;min-width:0}
+.card .n{font-family:var(--display);font-size:clamp(32px,2.8vw,52px);color:var(--warn);line-height:1}
+.card h3{font-size:clamp(18px,1.4vw,26px)}
+.card p{margin:0;color:var(--muted);font-size:clamp(14px,1.1vw,20px);line-height:1.35}
+
+.fly{position:fixed;z-index:80;font-family:var(--display);font-weight:700;color:var(--warn);pointer-events:none;line-height:1;
+  text-shadow:0 0 24px rgba(242,194,48,.8);transition:transform .9s cubic-bezier(.6,-0.2,.3,1.2)}
+
+.ctrl{position:fixed;z-index:30;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(24px + env(safe-area-inset-bottom,0px));display:flex;gap:8px;opacity:.3;transition:opacity .2s}
+.ctrl:hover,.ctrl:focus-within{opacity:1}
+.ctrl button{all:unset;cursor:pointer;background:var(--panel);border:2px solid var(--line);border-radius:10px;padding:6px 12px;font-weight:600;font-size:14px}
+.ctrl button:focus-visible{outline:3px solid var(--warn)} .ctrl button[aria-pressed="true"]{border-color:var(--warn)}
+.overlay{position:fixed;inset:0;z-index:90;background:rgba(8,10,14,.88);display:grid;place-items:center;padding:24px}
+.overlay .box{background:var(--panel);border:2px solid var(--line);border-radius:18px;padding:clamp(20px,3vw,40px);max-width:780px;width:100%;display:grid;gap:18px}
+.keys{display:grid;grid-template-columns:auto 1fr;gap:10px 22px;font-size:clamp(15px,1.3vw,22px);margin:0}
+.keys kbd{font-family:var(--display);background:#0B0E13;border:2px solid var(--line);border-radius:8px;padding:.1em .5em;color:var(--warn)}
+.keys dd{margin:0;color:var(--muted)}
+
+@media (max-width:900px){
+  body{overflow:auto} .split,.rail,.doorgame,.firegame{grid-template-columns:1fr} .grid4{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .seq{grid-template-columns:1fr 1fr} .door{max-width:240px} .room{width:100%} .hud{justify-content:center}
+  .hot .tag{font-size:11px}
+}
+/* pausa */
+.pauselayer{all:unset;position:fixed;inset:0;z-index:70;cursor:pointer;display:grid;place-content:center;gap:10px;text-align:center;background:rgba(8,10,14,.78);backdrop-filter:blur(3px)}
+.pauselayer span{font-family:var(--display);font-weight:700;text-transform:uppercase;font-size:clamp(44px,7vw,120px);color:var(--warn)}
+.pauselayer small{font-size:clamp(15px,1.5vw,26px);color:var(--muted)}
+.pauselayer:focus-visible{outline:4px solid var(--warn);outline-offset:-8px}
+/* ---------- juego individual en móvil / tablet ---------- */
+.rotate{display:none}
+@media (max-width:900px), (max-height:620px){
+  .panel{position:fixed;inset:0;z-index:40;padding:10px max(10px,env(safe-area-inset-left,0px));place-items:start center;overflow:auto}
+  .panel .box{max-height:none;padding:16px;gap:12px}
+  .panel .top .btn{font-size:15px}
+  .hot .tag{font-size:12px;padding:.15em .45em}
+  .hint{font-size:12px}
+  .signgame{grid-template-columns:1fr} .bigsign{width:150px}
+  .corridor{aspect-ratio:16/9}
+}
+@media (max-width:900px), (max-height:620px){
+  .ctrl .sc,#bFull,#bHelp{display:none}
+  .ctrl button{font-size:13px;padding:5px 9px}
+}
+@media (max-height:620px){
+  .hot{place-items:start center}
+  .hot.up{place-items:end center} .hot.up .tag{transform:translateY(calc(100% + 6px))}
+  .hot .tag{transform:translateY(calc(-100% - 6px));white-space:normal;text-align:center;max-width:110%;line-height:1.1}
+  .progress{display:none}
+  .ctrl{top:8px;bottom:auto}
+  .app{gap:6px;padding-block:6px 22px}
+  .timer{font-size:34px} .timer small{display:none}
+  .lock>svg{width:30px} .slot b{width:40px;height:48px;font-size:30px} .slot span{font-size:10px}
+  .progress{font-size:12px}
+  .room{width:min(100%,calc((100vh - 116px) * 16 / 9))}
+  .hint{font-size:11px;line-height:1.2}
+}
+@media (orientation:portrait) and (max-width:700px){
+  .rotate{display:block;font-size:14px;color:var(--muted);text-align:center;margin:0}
+}
+@media (pointer:coarse){
+  kbd,.hot .tag kbd{display:none}
+  #bHelp{display:none}
+  .ctrl{opacity:.85}
+}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="beacon" aria-hidden="true"></div>
+<div class="tape" aria-hidden="true"></div>
+
+<main class="app">
+  <header class="hud">
+    <div class="timer" id="timer"><small>Tiempo</small><span id="clock">2:00</span><span class="pen" id="pen">−10 s</span></div>
+    <div class="lock" id="lock" aria-label="Candado de la salida de emergencia">
+      <svg viewBox="0 0 64 80" aria-hidden="true">
+        <path class="shackle" d="M16 36V22a16 16 0 0 1 32 0v14" fill="none" stroke="#C9CED8" stroke-width="7" stroke-linecap="round"/>
+        <rect x="6" y="34" width="52" height="42" rx="8" fill="#F2C230"/>
+        <circle cx="32" cy="52" r="6" fill="#14161C"/><rect x="29" y="54" width="6" height="12" rx="3" fill="#14161C"/>
+      </svg>
+      <div class="slots" id="slots"></div>
+    </div>
+    <div class="progress" id="progress"></div>
+  </header>
+  <section class="stage" id="stage" aria-live="polite"></section>
+</main>
+
+<nav class="ctrl" aria-label="Controles del presentador">
+  <button type="button" id="bPause" aria-pressed="false">Pausa<span class="sc"> (P)</span></button>
+  <button type="button" id="bSound" aria-pressed="true">Sonido<span class="sc"> (S)</span></button>
+  <button type="button" id="bFull">Pantalla completa<span class="sc"> (F)</span></button>
+  <button type="button" id="bHelp">Atajos<span class="sc"> (?)</span></button>
+  <button type="button" id="bReset">Reiniciar<span class="sc"> (R)</span></button>
+</nav>
+
+<script>
+/* ======================= CONTENIDO (editable) ======================= */
+const GAME = {
+  seconds: 240,          // 4 minutos
+  penalty: 10,           // segundos que resta cada fallo
+  // Las pruebas de la sala, en el orden de las cifras del candado
+  rooms: [
+    { id:'elec', key:'1', name:'Cuadro eléctrico', short:'Eléctrico', digit:5,
+      learn:'Para trabajar sin tensión: cortar, bloquear, verificar, poner a tierra y en cortocircuito, y señalizar.', source:'INSST · Riesgo eléctrico' },
+    { id:'rail', key:'2', name:'Altillo', short:'Altillo', digit:9,
+      learn:'Barandilla de 90 cm como mínimo; obligatoria si la caída es de 2 m o más.', source:'RD 486/1997 · Anexo I, ap. 3' },
+    { id:'fire', key:'3', name:'Papelera ardiendo', short:'Fuego', digit:4,
+      learn:'El fuego necesita combustible, comburente, foco de ignición y reacción en cadena. Si quitas uno, se apaga.', source:'INSST · Seguridad contra incendios' },
+    { id:'path', key:'4', name:'Pasillo bloqueado', short:'Pasillo', digit:1,
+      learn:'Vías de evacuación siempre libres; pasillos de 1 m de ancho como mínimo.', source:'RD 486/1997 · Anexo I, ap. 5 y 10 · Anexo II' }
+  ],
+  rules: ['Cortar todas las fuentes de tensión','Bloquear los aparatos de corte','Verificar que no hay tensión','Poner a tierra y en cortocircuito','Señalizar la zona de trabajo'],
+  // prueba extra (opcional): cada acierto suma segundos
+  signs: { bonus:5, source:'RD 485/1997 · Anexos II y III',
+    learn:'Rojo y redonda: prohibición. Amarilla y triangular: peligro. Azul y redonda: obligación. Verde y rectangular: salvamento o socorro.',
+    list:[{id:'pro',name:'Prohibición'},{id:'adv',name:'Advertencia de peligro'},{id:'obl',name:'Obligación'},{id:'sal',name:'Salvamento o socorro'}] },
+  fire: { right:['Combustible','Comburente (oxígeno)','Foco de ignición (calor)','Reacción en cadena'],
+          wrong:['Agua','Humo','Ceniza','Luz'] },
+  path: [ // obstáculos (bad:true) y cosas que deben quedarse (bad:false)
+    { label:'Cajas apiladas', bad:true,  x:14, y:58, w:13, h:34, icon:'boxes' },
+    { label:'Regletas y cables', bad:true, x:31, y:80, w:13, h:14, icon:'cable', why:'Cables en el paso: tropiezos y riesgo de incendio.' },
+    { label:'Carro de material', bad:true, x:48, y:62, w:13, h:30, icon:'cart' },
+    { label:'Caja con monitores', bad:true, x:64, y:66, w:11, h:26, icon:'box' },
+    { label:'Extintor', bad:false, x:6, y:24, w:5, h:22, icon:'ext', why:'El extintor se queda: tiene que estar a mano y señalizado.' },
+    { label:'Señal de salida', bad:false, x:46, y:14, w:14, h:12, icon:'sign', why:'La señal de salida se queda: indica el camino de evacuación.' }
+  ],
+  door: { learn:'Las puertas de emergencia se abren hacia fuera, sin llave, y no pueden ser correderas ni giratorias.', source:'RD 486/1997 · Anexo I, ap. 10' }
+};
+
+/* ======================= ESTADO ======================= */
+const $ = s => document.querySelector(s);
+const stage = $('#stage');
+function fresh(){ return { screen:'intro', left:GAME.seconds, running:false, paused:false, digits:{}, fails:0, sound:true, open:null, unlocked:false, bonus:null }; }
+let S = fresh();
+let M = {}; // estado del minijuego abierto
+
+/* ======================= SONIDO (sintetizado con Web Audio, sin archivos) ======================= */
+const A={ctx:null,master:null,music:null,crackle:null};
+function audio(){ if(!A.ctx){ try{ A.ctx=new (window.AudioContext||window.webkitAudioContext)(); A.master=A.ctx.createGain(); A.master.gain.value=S.sound?1:0; A.master.connect(A.ctx.destination);}catch(e){return null} }
+  if(A.ctx.state==='suspended') A.ctx.resume(); return A.ctx; }
+function tone(f,{d=.12,type='sine',vol=.2,at=0,slide=null}={}){ const c=audio(); if(!c) return; const t=c.currentTime+at,o=c.createOscillator(),g=c.createGain();
+  o.type=type; o.frequency.setValueAtTime(f,t); if(slide) o.frequency.exponentialRampToValueAtTime(slide,t+d);
+  g.gain.setValueAtTime(.0001,t); g.gain.exponentialRampToValueAtTime(vol,t+.01); g.gain.exponentialRampToValueAtTime(.0001,t+d);
+  o.connect(g).connect(A.master); o.start(t); o.stop(t+d+.05); }
+function noise({d=.3,vol=.2,at=0,freq=1000,q=1,type='bandpass',sweep=null}={}){ const c=audio(); if(!c) return;
+  const len=Math.max(1,Math.floor(c.sampleRate*d)), b=c.createBuffer(1,len,c.sampleRate), ch=b.getChannelData(0); for(let i=0;i<len;i++) ch[i]=Math.random()*2-1;
+  const src=c.createBufferSource(); src.buffer=b; const fl=c.createBiquadFilter(); fl.type=type; fl.frequency.value=freq; fl.Q.value=q;
+  const t=c.currentTime+at; if(sweep) fl.frequency.exponentialRampToValueAtTime(sweep,t+d);
+  const g=c.createGain(); g.gain.setValueAtTime(vol,t); g.gain.exponentialRampToValueAtTime(.0001,t+d); src.connect(fl).connect(g).connect(A.master); src.start(t); }
+const SFX={
+  tap:()=>tone(620,{d:.05,vol:.12}),
+  key:()=>tone(880,{d:.07,type:'square',vol:.08}),
+  ok:()=>{tone(660,{d:.14});tone(880,{d:.14,at:.09});tone(1175,{d:.28,at:.18})},
+  ko:()=>{tone(180,{d:.25,type:'square',vol:.15});tone(120,{d:.3,type:'square',vol:.15,at:.12})},
+  whoosh:()=>{noise({d:.35,vol:.35,freq:400,sweep:3000,q:.8});tone(90,{d:.18,type:'triangle',vol:.2,slide:55,at:.28})},
+  digit:()=>[523,784,1047].forEach((f,i)=>tone(f,{d:.14,type:'triangle',at:i*.06})),
+  unlock:()=>{noise({d:.08,vol:.4,freq:2500,q:4});tone(330,{d:.1,type:'square',vol:.12,at:.08});[523,659,784,1047].forEach((f,i)=>tone(f,{d:.22,type:'triangle',at:.2+i*.1}))},
+  creak:()=>{tone(140,{d:1.3,type:'sawtooth',vol:.05,slide:85});noise({d:1.3,vol:.08,freq:600,sweep:250,q:6})},
+  fanfare:()=>[523,659,784,1047,784,1047].forEach((f,i)=>tone(f,{d:.26,type:'triangle',vol:.18,at:.9+i*.14})),
+  siren:()=>{for(let i=0;i<4;i++){tone(600,{d:.45,type:'sawtooth',vol:.11,at:i*.9,slide:1100});tone(1100,{d:.45,type:'sawtooth',vol:.11,at:i*.9+.45,slide:600});}},
+  extinguish:()=>noise({d:1.5,vol:.35,freq:3000,sweep:500,q:.6,type:'highpass'}),
+  flare:()=>{noise({d:.5,vol:.3,freq:300,sweep:1400,q:.7,type:'lowpass'})},
+  tick:hi=>tone(hi?1500:1100,{d:.03,type:'square',vol:hi?.08:.04}),
+  alarm:()=>SFX.siren()
+};
+function musicStart(){ const c=audio(); if(!c||A.music) return;
+  const g=c.createGain(); g.gain.setValueAtTime(0,c.currentTime); g.gain.linearRampToValueAtTime(.05,c.currentTime+1.5);
+  const f=c.createBiquadFilter(); f.type='lowpass'; f.frequency.value=380;
+  const lfo=c.createOscillator(), lg=c.createGain(); lfo.frequency.value=.15; lg.gain.value=160; lfo.connect(lg).connect(f.frequency);
+  const os=[55,82.4,110.3].map((fr,i)=>{const o=c.createOscillator(); o.type=i?'sawtooth':'triangle'; o.frequency.value=fr; o.detune.value=(i-1)*7; o.connect(f); o.start(); return o;});
+  f.connect(g).connect(A.master); lfo.start(); A.music={g,os:[...os,lfo]}; }
+function musicStop(){ if(!A.music) return; const c=A.ctx, m=A.music; A.music=null; m.g.gain.cancelScheduledValues(c.currentTime); m.g.gain.setTargetAtTime(0,c.currentTime,.25); setTimeout(()=>m.os.forEach(o=>{try{o.stop()}catch(e){}}),1500); }
+function crackleStart(){ if(A.crackle) return; A.crackle=setInterval(()=>{ if(!S.paused) for(let i=0;i<3;i++) noise({d:.03+Math.random()*.05,vol:.08+Math.random()*.14,freq:1500+Math.random()*3000,q:2,at:Math.random()*.25}); },250); }
+function crackleStop(){ clearInterval(A.crackle); A.crackle=null; }
+function stopAllSound(){ musicStop(); crackleStop(); }
+
+/* ======================= TIEMPO ======================= */
+let last=0;
+function tick(now){
+  if(S.running&&!S.paused){ const before=Math.ceil(S.left); if(last) S.left=Math.max(0,S.left-(now-last)/1000);
+    const after=Math.ceil(S.left); if(after!==before&&after>0){ SFX.tick(after<=30); if(after<=10) setTimeout(()=>SFX.tick(true),500); }
+    if(S.left<=0){ S.running=false; S.paused=false; setPauseLayer(); S.open=null; stopAllSound(); go('lose'); SFX.siren(); } }
+  last=now; const t=Math.ceil(S.left); $('#clock').textContent=`${Math.floor(t/60)}:${String(t%60).padStart(2,'0')}`;
+  $('#timer').classList.toggle('low',S.running&&S.left<=30); $('#timer').classList.toggle('paused',S.paused);
+  requestAnimationFrame(tick);
+}
+const fmt=x=>{const t=Math.ceil(x);return `${Math.floor(t/60)}:${String(t%60).padStart(2,'0')}`};
+function penalize(){ S.fails++; S.left=Math.max(0,S.left-GAME.penalty); SFX.ko(); const p=$('#pen'); p.textContent=`−${GAME.penalty} s`; p.classList.remove('plus'); p.classList.add('show'); clearTimeout(p._t); p._t=setTimeout(()=>p.classList.remove('show'),1300); }
+
+/* ======================= HUD ======================= */
+function drawHud(){
+  $('#slots').innerHTML=GAME.rooms.map(r=>{const d=S.digits[r.id];return `<div class="slot ${d!=null?'on':''}" data-id="${r.id}"><b>${d!=null?d:'·'}</b><span>${r.short}</span></div>`}).join('');
+  const n=Object.keys(S.digits).length;
+  $('#progress').innerHTML=`Cifras<b>${n} / ${GAME.rooms.length}</b>`;
+  $('#lock').classList.toggle('open',S.unlocked);
+  document.body.classList.toggle('alarm',S.screen==='lose'); document.body.classList.toggle('free',S.screen==='win');
+}
+
+/* ======================= DIBUJOS ======================= */
+const ICONS={
+ boxes:`<svg viewBox="0 0 100 120"><rect x="6" y="62" width="88" height="56" fill="#B9824B" stroke="#7A5428" stroke-width="3"/><rect x="18" y="12" width="64" height="52" fill="#C99258" stroke="#7A5428" stroke-width="3"/><rect x="45" y="62" width="10" height="56" fill="#E0B07A"/><rect x="45" y="12" width="10" height="52" fill="#E0B07A"/></svg>`,
+ cable:`<svg viewBox="0 0 120 50"><rect x="4" y="22" width="58" height="18" rx="5" fill="#E8E4DA" stroke="#555" stroke-width="2"/><rect x="66" y="26" width="46" height="14" rx="5" fill="#E8E4DA" stroke="#555" stroke-width="2"/><g fill="#111"><rect x="12" y="14" width="9" height="10"/><rect x="27" y="14" width="9" height="10"/><rect x="42" y="14" width="9" height="10"/><rect x="74" y="18" width="8" height="9"/></g><path d="M62 32 C64 32 64 33 66 33 M16 14 C10 0 0 6 -4 2 M31 14 C34 2 50 0 56 -4 M46 14 C56 4 70 6 80 -2 M112 33 C120 30 124 20 128 16" stroke="#111" stroke-width="3" fill="none"/><path d="M58 4l7 9-5 1 7 10-11-9 5-1z" fill="#F2C230"/></svg>`,
+ cart:`<svg viewBox="0 0 110 110"><rect x="8" y="30" width="80" height="50" rx="4" fill="#3B7BD6"/><rect x="16" y="10" width="34" height="24" fill="#C99258" stroke="#7A5428" stroke-width="2"/><rect x="52" y="16" width="30" height="18" fill="#B9824B" stroke="#7A5428" stroke-width="2"/><path d="M88 36h14" stroke="#9AA3B2" stroke-width="5"/><circle cx="24" cy="94" r="10" fill="#222" stroke="#666" stroke-width="3"/><circle cx="74" cy="94" r="10" fill="#222" stroke="#666" stroke-width="3"/></svg>`,
+ box:`<svg viewBox="0 0 100 100"><rect x="6" y="20" width="88" height="76" fill="#C99258" stroke="#7A5428" stroke-width="3"/><rect x="20" y="4" width="60" height="40" rx="3" fill="#20242C" stroke="#555" stroke-width="3"/><rect x="26" y="9" width="48" height="28" fill="#3B7BD6" opacity=".6"/><rect x="45" y="20" width="10" height="76" fill="#E0B07A"/></svg>`,
+ ext:`<svg viewBox="0 0 40 110"><rect x="8" y="22" width="24" height="84" rx="10" fill="#D2252F"/><rect x="13" y="8" width="14" height="16" fill="#333"/><path d="M27 12h10v6" stroke="#333" stroke-width="4" fill="none"/><rect x="11" y="50" width="18" height="22" fill="#fff" opacity=".85"/></svg>`,
+ sign:`<svg viewBox="0 0 140 60"><rect x="0" y="0" width="140" height="60" rx="6" fill="#1E9A5B"/><circle cx="40" cy="14" r="6" fill="#fff"/><path d="M36 22l-8 14h5l4-6 5 4v10h5V34l-5-6 3-4 4 4h8v-4h-6l-6-6z" fill="#fff"/><path d="M70 30h44m0 0-10-8m10 8-10 8" stroke="#fff" stroke-width="6" fill="none" stroke-linecap="round"/></svg>`
+};
+
+const ROOM_SVG=`<svg viewBox="0 0 1600 900" aria-hidden="true" preserveAspectRatio="xMidYMid slice">
+ <defs><linearGradient id="w" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#202734"/><stop offset="1" stop-color="#181D27"/></linearGradient>
+ <linearGradient id="f" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#171C25"/><stop offset="1" stop-color="#0E1117"/></linearGradient>
+ <radialGradient id="fl" cx=".5" cy="1" r=".8"><stop offset="0" stop-color="#F2C230" stop-opacity=".55"/><stop offset="1" stop-color="#F2C230" stop-opacity="0"/></radialGradient></defs>
+ <rect width="1600" height="620" fill="url(#w)"/><rect y="620" width="1600" height="280" fill="url(#f)"/>
+ <g stroke="#232A36" stroke-width="2">${Array.from({length:9},(_,i)=>`<line x1="${i*200}" y1="620" x2="${800+(i*200-800)*1.8}" y2="900"/>`).join('')}</g>
+ <!-- estanterías de fondo -->
+ <g fill="#151A23">${[0,1,2,3].map(r=>`<rect x="560" y="${150+r*120}" width="560" height="14"/>`).join('')}<rect x="560" y="150" width="14" height="470"/><rect x="1106" y="150" width="14" height="470"/><rect x="830" y="150" width="10" height="470"/></g>
+ <g fill="#1F2530">${[[590,96],[680,110],[870,90],[960,100],[600,226],[740,214],[880,232],[1010,220],[620,346],[900,340],[1000,356],[650,466],[780,458],[940,470]].map(([x,y])=>`<rect x="${x}" y="${y}" width="${70+((x+y)%3)*12}" height="${54-((x)%2)*10}"/>`).join('')}</g>
+ <!-- cuadro eléctrico -->
+ <rect x="70" y="170" width="190" height="250" rx="8" fill="#7C8594" stroke="#4A5363" stroke-width="6"/><rect x="92" y="196" width="146" height="196" rx="4" fill="#5D6676"/>
+ <g fill="#2B313C">${[0,1,2,3,4,5].map(i=>`<rect x="${104+i*22}" y="226" width="16" height="44" rx="3"/>`).join('')}${[0,1,2,3,4,5].map(i=>`<rect x="${104+i*22}" y="290" width="16" height="44" rx="3"/>`).join('')}</g>
+ <polygon points="165,140 205,210 125,210" fill="#F2C230" stroke="#14161C" stroke-width="4"/><path d="M168 158l-12 26h12l-6 18 18-30h-12l6-14z" fill="#14161C"/>
+ <path d="M240 380 C300 440 260 520 330 560 S300 640 380 640" stroke="#111" stroke-width="7" fill="none"/>
+ <!-- altillo sin barandilla -->
+ <rect x="300" y="330" width="360" height="26" fill="#3A4252"/><rect x="320" y="356" width="18" height="264" fill="#4A5363"/><rect x="620" y="356" width="18" height="264" fill="#4A5363"/>
+ <g fill="#5D6676">${[0,1,2,3,4,5,6,7].map(i=>`<rect x="352" y="${380+i*30}" width="70" height="6"/>`).join('')}</g><rect x="352" y="356" width="8" height="264" fill="#5D6676"/><rect x="414" y="356" width="8" height="264" fill="#5D6676"/>
+ <g transform="translate(600 228)"><circle cx="20" cy="14" r="14" fill="#E9C6A0"/><path d="M4 8 Q20 -10 36 8 Z" fill="#F2C230"/><rect x="6" y="30" width="28" height="44" rx="8" fill="#3B7BD6"/><rect x="8" y="72" width="10" height="30" fill="#2B313C"/><rect x="22" y="72" width="10" height="30" fill="#2B313C"/><rect x="30" y="34" width="34" height="9" rx="4" fill="#3B7BD6" transform="rotate(-25 30 34)"/></g>
+ <!-- papelera ardiendo -->
+ <ellipse cx="770" cy="720" rx="170" ry="70" fill="url(#fl)"/>
+ <path d="M720 690 h100 l-12 110 h-76z" fill="#4A5363" stroke="#2B313C" stroke-width="4"/>
+ <path d="M770 560 C800 610 840 630 832 680 C826 712 800 720 770 720 C738 720 712 708 710 676 C708 646 728 630 742 606 C746 630 754 642 768 644 C760 614 756 590 770 560Z" fill="#D2252F"/>
+ <path d="M772 626 C786 650 800 664 798 686 C796 706 786 714 772 714 C756 714 746 704 746 688 C746 670 758 662 764 650 C766 664 770 670 776 672 C772 656 770 642 772 626Z" fill="#F2C230"/>
+ <!-- pasillo con obstáculos hacia la puerta -->
+ <path d="M940 900 L1090 640 L1400 640 L1500 900 Z" fill="#12261C" opacity=".55"/>
+ <g transform="translate(1050 560) scale(1.2)">${''}<rect x="0" y="50" width="80" height="50" fill="#B9824B" stroke="#7A5428" stroke-width="3"/><rect x="12" y="6" width="58" height="46" fill="#C99258" stroke="#7A5428" stroke-width="3"/><rect x="35" y="6" width="9" height="94" fill="#E0B07A"/></g>
+ <g transform="translate(1180 640)"><rect x="0" y="20" width="110" height="64" rx="4" fill="#3B7BD6"/><rect x="10" y="-16" width="44" height="38" fill="#C99258" stroke="#7A5428" stroke-width="2"/><circle cx="20" cy="96" r="12" fill="#222"/><circle cx="90" cy="96" r="12" fill="#222"/></g>
+ <!-- panel de señales -->
+ <rect x="1140" y="208" width="190" height="168" rx="8" fill="#232A36" stroke="#2E3747" stroke-width="4"/>
+ <circle cx="1190" cy="250" r="28" fill="#F4F1E8" stroke="#D2252F" stroke-width="8"/><line x1="1171" y1="231" x2="1209" y2="269" stroke="#D2252F" stroke-width="8"/>
+ <polygon points="1280,220 1312,276 1248,276" fill="#F2C230" stroke="#14161C" stroke-width="4"/><rect x="1277" y="236" width="6" height="22" rx="3" fill="#14161C"/><circle cx="1280" cy="266" r="3.5" fill="#14161C"/>
+ <circle cx="1190" cy="330" r="30" fill="#3B7BD6"/><path d="M1172 342 c0-18 8-26 18-26 s18 8 18 26z" fill="#fff"/>
+ <rect x="1248" y="302" width="66" height="56" rx="4" fill="#1E9A5B"/><path d="M1268 312v36M1262 330h12" stroke="#fff" stroke-width="0"/><rect x="1275" y="312" width="12" height="36" fill="#fff"/><rect x="1263" y="324" width="36" height="12" fill="#fff"/>
+ <!-- puerta de emergencia con candado -->
+ <rect x="1340" y="200" width="200" height="420" fill="#0B0E13"/><rect x="1352" y="212" width="176" height="408" fill="#1E9A5B"/><rect x="1352" y="400" width="176" height="14" fill="#167446"/>
+ <rect x="1360" y="126" width="160" height="58" rx="6" fill="#1E9A5B"/><circle cx="1396" cy="144" r="7" fill="#fff"/><path d="M1390 152l-9 16h6l4-6 5 4v10h5v-12l-5-6 3-5 4 4h8v-4h-6l-6-6z" fill="#fff"/><path d="M1424 158h70m0 0-12-9m12 9-12 9" stroke="#fff" stroke-width="6" fill="none" stroke-linecap="round"/>
+ <rect x="1478" y="380" width="40" height="54" rx="6" fill="#C9CED8"/>
+ <path d="M1488 452 v-14 a14 14 0 0 1 28 0 v14" fill="none" stroke="#C9CED8" stroke-width="6"/><rect x="1480" y="450" width="44" height="40" rx="6" fill="#F2C230"/>
+</svg>`;
+
+const DOOR_SVG=`<svg viewBox="0 0 300 420" aria-label="Puerta de salida de emergencia">
+  <rect class="glow" x="20" y="60" width="260" height="350" fill="#7BE0A8"/>
+  <rect x="10" y="50" width="280" height="360" fill="none" stroke="#3A4252" stroke-width="12"/>
+  <rect x="40" y="6" width="220" height="40" rx="6" fill="#1E9A5B"/>
+  <g fill="#fff"><circle cx="86" cy="18" r="6"/><path d="M80 26l-8 14h6l4-6 5 4v8h5V34l-5-5 3-5 4 4h7v-4h-5l-6-6z"/></g>
+  <path d="M112 30h80m0 0-14-10m14 10-14 10" stroke="#fff" stroke-width="6" fill="none" stroke-linecap="round"/>
+  <g class="leaf"><rect x="20" y="60" width="260" height="350" fill="#1E9A5B"/><rect x="20" y="210" width="260" height="16" fill="#167446"/>
+    <rect x="232" y="196" width="34" height="44" rx="6" fill="#C9CED8"/><rect x="44" y="84" width="212" height="100" rx="8" fill="#167446"/></g>
+</svg>`;
+
+// zonas pulsables sobre la sala (porcentajes del dibujo 1600×900)
+const HOTS=[
+  {id:'elec', x:3.5,y:14,w:13.5,h:34, up:true},
+  {id:'rail', x:19,y:24,w:23,h:46},
+  {id:'fire', x:43,y:60,w:16,h:31},
+  {id:'path', x:64,y:60,w:19,h:31},
+  {id:'door', x:83,y:13,w:15.5,h:57},
+  {id:'signs', x:70.8,y:22.2,w:12.6,h:20, bonus:true}
+];
+
+/* ======================= PANTALLAS ======================= */
+function go(screen){ closePanel(); M={}; S.screen=screen; render(); }
+function render(){
+  drawHud();
+  const sc=S.screen;
+  if(sc==='intro'){ stage.innerHTML=`<div class="screen split">
+      <div style="display:grid;gap:clamp(12px,2.2vh,30px)">
+        <p class="eyebrow">Condiciones de seguridad · SMR</p>
+        <h1>Escapa del<br>almacén</h1>
+        <p class="lead">El almacén <b>incumple las normas de seguridad</b> y la salida está cerrada con un candado de <b>${GAME.rooms.length} cifras</b>. Explora la sala: cada riesgo que corrijas te da una cifra. Cada fallo resta <b>${GAME.penalty} s</b>. Tienes <b>${fmt(GAME.seconds)}</b>.</p>
+        <button class="btn" id="go" type="button">Entrar al almacén <kbd>Espacio</kbd></button>
+      </div><div class="door">${DOOR_SVG}</div></div>`; $('#go').onclick=startGame; }
+  else if(sc==='room'){ drawRoom(); }
+  else if(sc==='win'){ stage.innerHTML=`<div class="screen split">
+      <div style="display:grid;gap:clamp(12px,2.2vh,30px)"><p class="eyebrow">Salida despejada</p><h1>¡Has<br>escapado!</h1>
+        <div class="stars" aria-label="${stars()} de 3 estrellas">${[1,2,3].map(i=>`<span class="${i<=stars()?'on':''}">★</span>`).join('')}</div>
+        <div class="stats"><div class="stat"><b>${fmt(S.left)}</b><span>Tiempo restante</span></div><div class="stat"><b>${S.fails}</b><span>Fallos</span></div>${S.bonus?`<div class="stat"><b>+${S.bonus}s</b><span>Extra señales</span></div>`:''}</div>
+        <p class="best">${bestLine()}</p>
+        <button class="btn" id="go" type="button">Repasar lo aprendido <kbd>Espacio</kbd></button></div>
+      <div class="door" id="door">${DOOR_SVG}</div></div>`; $('#go').onclick=()=>go('summary'); setTimeout(()=>$('#door')?.classList.add('open'),350); }
+  else if(sc==='lose'){ const n=Object.keys(S.digits).length; stage.innerHTML=`<div class="screen" style="text-align:center;justify-items:center">
+      <p class="eyebrow" style="color:var(--stop-soft)">Alarma · tiempo agotado</p><h1 style="color:var(--stop-soft)">No has salido<br>a tiempo</h1>
+      <p class="lead" style="text-align:center">Has conseguido <b>${n} de ${GAME.rooms.length}</b> cifras. En una emergencia real, cada segundo cuenta.</p>
+      <button class="btn" id="go" type="button">Repasar lo aprendido <kbd>Espacio</kbd></button></div>`; $('#go').onclick=()=>go('summary'); }
+  else if(sc==='summary'){ stage.innerHTML=`<div class="screen"><p class="eyebrow">Repaso</p><h2>Lo que hemos aprendido</h2>
+      <div class="cards">${GAME.rooms.map(r=>`<article class="card"><span class="n">${r.digit}</span><h3>${r.name}</h3><p>${r.learn}</p><p style="font-size:.85em">${r.source}</p></article>`).join('')}
+      <article class="card"><span class="n">★</span><h3>Señales (extra)</h3><p>${GAME.signs.learn}</p><p style="font-size:.85em">${GAME.signs.source}</p></article>
+      <article class="card"><span class="n">→</span><h3>Puerta de emergencia</h3><p>${GAME.door.learn}</p><p style="font-size:.85em">${GAME.door.source}</p></article></div>
+      <button class="btn" id="again" type="button">Jugar otra vez <kbd>R</kbd></button></div>`; $('#again').onclick=reset; }
+}
+
+function stars(){ return S.fails<=1?3:S.fails<=4?2:1; }
+function bestLine(){
+  if(!S.saved){ S.saved=true; let best=null; try{ best=JSON.parse(localStorage.getItem('escapa-best')||'null'); }catch(e){}
+    S.prevBest=best; const now={left:Math.round(S.left),fails:S.fails}; S.rec=!best||now.left>best.left;
+    if(S.rec){ try{ localStorage.setItem('escapa-best',JSON.stringify(now)); }catch(e){} } }
+  if(S.rec) return S.prevBest?`<b>¡Nuevo récord!</b> Superas tu marca anterior (${fmt(S.prevBest.left)} restantes).`:'<b>Récord guardado.</b> Juega otra vez para intentar superarlo.';
+  return `Tu récord sigue siendo <b>${fmt(S.prevBest.left)}</b> restantes con ${S.prevBest.fails} fallos.`; }
+function startGame(){ S=Object.assign(fresh(),{sound:S.sound}); S.running=true; audio(); SFX.tap(); musicStart(); go('room'); }
+
+function drawRoom(){
+  const n=Object.keys(S.digits).length;
+  stage.innerHTML=`<div style="display:grid;gap:8px;width:100%;justify-items:center"><p class="rotate">Gira el móvil para ver mejor la sala ↻</p><div class="room" id="room">${ROOM_SVG}
+    ${HOTS.map((h,i)=>{const r=GAME.rooms.find(x=>x.id===h.id);const done=r?S.digits[r.id]!=null:(h.bonus&&S.bonus!=null);const label=r?r.name:h.bonus?'Extra: señales':'Salida';
+      return `<button type="button" class="hot ${done?'done':''} ${h.up?'up':''} ${h.bonus?'bonus':''}" data-id="${h.id}" style="left:${h.x}%;top:${h.y}%;width:${h.w}%;height:${h.h}%" aria-label="${label}${done?' (resuelto)':''}"><span class="tag"><kbd>${i+1}</kbd>${label}</span></button>`}).join('')}
+  </div><p class="hint">${n<GAME.rooms.length?`Pulsa los objetos marcados: cada riesgo que corrijas te da <b>una cifra</b> del candado (llevas ${n} de ${GAME.rooms.length}). La prueba de <b>señales</b> es opcional y suma tiempo.`:`¡Ya tienes las ${GAME.rooms.length} cifras! Ve a la <b>salida</b>.`}</p></div>`;
+  stage.querySelectorAll('.hot').forEach(b=>b.onclick=()=>openGame(b.dataset.id));
+  if(S.open) openGame(S.open,true);
+}
+
+/* ======================= MINIJUEGOS ======================= */
+function panel(title,eyebrow,ins,body){
+  closePanel();
+  const p=document.createElement('div'); p.className='panel'; p.id='panel';
+  p.innerHTML=`<div class="box" role="dialog" aria-label="${title}"><div class="top"><div style="display:grid;gap:8px"><p class="eyebrow">${eyebrow}</p><h2>${title}</h2></div>
+    <button class="btn ghost" type="button" id="back">Volver a la sala <kbd>Esc</kbd></button></div>
+    <p class="ins">${ins}</p>${body}<div class="fb" id="fb"></div><div class="actions" id="act"></div></div>`;
+  (matchMedia('(max-width:900px), (max-height:620px)').matches ? document.body : stage).appendChild(p); $('#back').onclick=leavePanel;
+  return p;
+}
+function closePanel(){ $('#panel')?.remove(); crackleStop(); }
+function leavePanel(){ if(S.paused) return; if(M.take) return M.take(); if(M.done) return; if(M.kind==='signs') S.bonus=M.got*GAME.signs.bonus; S.open=null; M={}; closePanel(); if(S.screen==='room') drawRoom(); }
+function fb(ok,html){ const f=$('#fb'); f.className='fb '+(ok?'ok':'ko'); f.innerHTML=`<span class="t">${ok?'✓ ¡Correcto!':'✗ No'}</span><span>${html}</span>`; }
+
+function openGame(id,restore){
+  if(S.screen!=='room') return;
+  const r=GAME.rooms.find(x=>x.id===id);
+  if(r && S.digits[id]!=null){ M={}; panel(r.name,'Resuelto',`Ya tienes la cifra <b>${r.digit}</b> de esta prueba.`,`<div class="fb ok"><span class="t">✓</span><span>${r.learn}<small>Fuente: ${r.source}</small></span></div>`); S.open=null; return; }
+  if(id==='signs' && S.bonus!=null){ M={}; panel('Señales de seguridad','Prueba extra · hecha',`Ganaste <b>+${S.bonus} s</b> con esta prueba.`,`<div class="fb ok"><span class="t">✓</span><span>${GAME.signs.learn}<small>Fuente: ${GAME.signs.source}</small></span></div>`); S.open=null; return; }
+  S.open=id; if(!restore) SFX.tap();
+  ({elec:gElec,rail:gRail,fire:gFire,path:gPath,door:gDoor,signs:gSigns})[id]();
+}
+function win(id){
+  const r=GAME.rooms.find(x=>x.id===id); SFX.ok(); M.done=false;
+  fb(true,`${r.learn}<small>Fuente: ${r.source}</small>`);
+  $('#act').innerHTML=`<div class="prize">Cifra conseguida <b id="prize">${r.digit}</b></div><button class="btn green" type="button" id="take">Guardar la cifra <kbd>Espacio</kbd></button>`;
+  M.done=true; M.take=()=>takeDigit(r); $('#take').onclick=M.take; $('#take').focus();
+}
+function takeDigit(r){
+  if(S.digits[r.id]!=null) return;
+  const from=$('#prize').getBoundingClientRect(); S.digits[r.id]=r.digit; S.open=null; M={};
+  const fly=document.createElement('div'); fly.className='fly'; fly.textContent=r.digit; fly.style.fontSize=getComputedStyle($('#prize')).fontSize;
+  fly.style.left=from.left+'px'; fly.style.top=from.top+'px'; document.body.appendChild(fly);
+  closePanel(); drawHud();
+  const to=document.querySelector(`.slot[data-id="${r.id}"] b`).getBoundingClientRect();
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches){ fly.remove(); if(S.screen==='room') drawRoom(); return; }
+  requestAnimationFrame(()=>{ fly.style.transform=`translate(${to.left-from.left+to.width/4}px,${to.top-from.top}px) scale(.6)`; });
+  setTimeout(()=>{ fly.remove(); if(S.screen!=='room') return; SFX.digit(); drawRoom(); },950);
+}
+
+/* 1 · Cuadro eléctrico: ordenar las 5 reglas de oro */
+function gElec(){
+  const order=GAME.rules.map((t,i)=>({t,i})).sort(()=>Math.random()-.5);
+  M={kind:'elec',order,next:0};
+  panel('Ordena las 5 reglas de oro','Cuadro eléctrico · riesgo eléctrico',
+    'Hay que revisar el cuadro. Para trabajar <b>sin tensión</b>, pulsa las reglas <b>en el orden correcto</b>. Teclas 1–5.',
+    `<div class="seq" id="seq">${GAME.rules.map((_,i)=>`<div><span><i>${i+1}</i>…</span></div>`).join('')}</div>
+     <div class="grid2" id="opts">${order.map((o,k)=>`<button type="button" class="chip" data-i="${o.i}"><span class="k">${k+1}</span><span>${o.t}</span></button>`).join('')}</div>`);
+  document.querySelectorAll('#opts .chip').forEach(b=>b.onclick=()=>pickRule(b));
+  buzz();
+}
+function buzz(){ tone(100,{d:.35,type:'sawtooth',vol:.07}); noise({d:.18,vol:.12,freq:4000,q:3,at:.05}); }
+function pickRule(b){
+  if(M.done||b.classList.contains('right')) return;
+  const i=+b.dataset.i;
+  if(i===M.next){ b.classList.add('right'); const slot=$('#seq').children[M.next]; slot.classList.add('f'); slot.innerHTML=`<span><i>${M.next+1}</i>${GAME.rules[i]}</span>`; M.next++;
+    tone(440+M.next*110,{d:.12,type:'triangle'}); $('#fb').className='fb'; $('#fb').innerHTML='';
+    if(M.next===GAME.rules.length) win('elec'); }
+  else { b.classList.remove('shake'); void b.offsetWidth; b.classList.add('shake','wrong'); setTimeout(()=>b.classList.remove('wrong'),500); penalize(); buzz();
+    fb(false,`Ese paso no va ahora. Piensa: ¿qué se hace justo después de «${M.next?GAME.rules[M.next-1].toLowerCase():'empezar'}»?`); }
+}
+
+/* 2 · Altillo: subir la barandilla hasta el mínimo legal */
+function railSVG(cm){
+  const px=Math.round(cm*1.4), top=200-px;
+  return `<svg viewBox="0 0 420 300" aria-label="Altillo con barandilla de ${cm} cm">
+    <rect x="0" y="292" width="420" height="8" fill="#2E3747"/><rect x="20" y="200" width="300" height="18" fill="#3A4252"/><rect x="40" y="218" width="14" height="74" fill="#4A5363"/><rect x="290" y="218" width="14" height="74" fill="#4A5363"/>
+    <g transform="translate(130 108)"><circle cx="16" cy="12" r="12" fill="#E9C6A0"/><path d="M3 7 Q16 -8 29 7Z" fill="#F2C230"/><rect x="4" y="26" width="24" height="38" rx="7" fill="#3B7BD6"/><rect x="6" y="62" width="8" height="30" fill="#2B313C"/><rect x="18" y="62" width="8" height="30" fill="#2B313C"/></g>
+    <g fill="#F2C230"><rect x="300" y="${top}" width="8" height="${px}"/><rect x="230" y="${top}" width="8" height="${px}"/><rect x="230" y="${top}" width="78" height="8"/><rect x="230" y="${top+px/2}" width="78" height="6"/></g>
+    <rect x="230" y="186" width="78" height="14" fill="#D2252F"/>
+    <line x1="340" y1="${top}" x2="340" y2="200" stroke="#F4F1E8" stroke-width="3"/><line x1="330" y1="${top}" x2="350" y2="${top}" stroke="#F4F1E8" stroke-width="3"/><line x1="330" y1="200" x2="350" y2="200" stroke="#F4F1E8" stroke-width="3"/>
+    <line x1="380" y1="210" x2="380" y2="292" stroke="#D2252F" stroke-width="3" stroke-dasharray="8 6"/><line x1="370" y1="210" x2="390" y2="210" stroke="#D2252F" stroke-width="3"/><line x1="370" y1="292" x2="390" y2="292" stroke="#D2252F" stroke-width="3"/>
+    <text x="392" y="256" fill="#FF8A8F" font-size="16" font-family="Oswald,Arial" text-anchor="end" transform="rotate(-90 392 256)">2,5 m</text>
+  </svg>`;
+}
+function gRail(){
+  M={kind:'rail',cm:50};
+  panel('Pon la barandilla','Altillo · caídas a distinto nivel',
+    'Este altillo tiene <b>2,5 m de caída</b> y no tiene protección. Sube la barandilla hasta la <b>altura mínima legal</b> y pulsa «Comprobar». Flechas ← → para ajustar.',
+    `<div class="rail"><div id="railpic">${railSVG(50)}</div>
+      <div class="meter"><output id="cm" for="h" class="bad">50 cm</output>
+      <label for="h" class="ins">Altura de la barandilla</label>
+      <input type="range" id="h" min="30" max="130" step="5" value="50">
+      <div class="steps"><button class="btn" type="button" id="check">Comprobar <kbd>Intro</kbd></button></div></div></div>`);
+  const h=$('#h'); h.oninput=()=>{ if(M.done) return; M.cm=+h.value; $('#cm').textContent=M.cm+' cm'; $('#cm').className=M.cm>=90?'good':'bad'; $('#railpic').innerHTML=railSVG(M.cm); tone(300+M.cm*4,{d:.04,type:'square',vol:.04}); };
+  $('#check').onclick=checkRail; h.focus();
+}
+function checkRail(){
+  if(M.done||M.kind!=='rail') return;
+  if(M.cm<90){ penalize(); fb(false,`${M.cm} cm es demasiado bajo: alguien podría caerse por encima.`); }
+  else { $('#h').disabled=true; $('#check').disabled=true; SFX.key(); win('rail'); }
+}
+
+/* Extra · Señales: reconocer el tipo de señal (opcional, suma segundos) */
+const SIGN_SVG={
+  pro:`<svg viewBox="0 0 200 200" aria-label="Señal redonda roja con una barra"><circle cx="100" cy="100" r="84" fill="#F4F1E8" stroke="#D2252F" stroke-width="22"/><line x1="42" y1="42" x2="158" y2="158" stroke="#D2252F" stroke-width="22"/><path d="M100 60 C118 86 128 96 126 120 C124 138 112 146 100 146 C86 146 74 138 74 120 C74 104 84 96 90 84 C92 98 96 104 102 104 C98 88 96 76 100 60Z" fill="#14161C"/></svg>`,
+  adv:`<svg viewBox="0 0 200 200" aria-label="Señal triangular amarilla"><polygon points="100,14 190,176 10,176" fill="#F2C230" stroke="#14161C" stroke-width="10" stroke-linejoin="round"/><path d="M104 66l-26 52h22l-10 40 34-58h-22l12-34z" fill="#14161C"/></svg>`,
+  obl:`<svg viewBox="0 0 200 200" aria-label="Señal redonda azul"><circle cx="100" cy="100" r="90" fill="#3B7BD6"/><path d="M52 124 c0-44 22-62 48-62 s48 18 48 62z" fill="#fff"/><rect x="40" y="120" width="120" height="14" rx="7" fill="#fff"/></svg>`,
+  sal:`<svg viewBox="0 0 200 200" aria-label="Señal rectangular verde"><rect x="6" y="30" width="188" height="140" rx="10" fill="#1E9A5B"/><rect x="86" y="50" width="28" height="100" fill="#fff"/><rect x="50" y="86" width="100" height="28" fill="#fff"/></svg>`
+};
+function gSigns(){
+  const order=GAME.signs.list.map(x=>x.id).sort(()=>Math.random()-.5);
+  M={kind:'signs',order,i:0,got:0,res:[]};
+  panel('¿Qué indica cada señal?','Prueba extra · señales de seguridad',
+    `Prueba opcional: cada señal que aciertes suma <b>+${GAME.signs.bonus} s</b> al reloj. Fallar aquí no resta. Teclas 1–4.`,
+    `<div class="signgame"><div style="display:grid;gap:12px;justify-items:center"><div class="bigsign" id="bigsign"></div><div class="dots" id="dots"></div></div>
+     <div class="grid2" id="opts">${GAME.signs.list.map((o,k)=>`<button type="button" class="chip" data-v="${o.id}"><span class="k">${k+1}</span><span>${o.name}</span></button>`).join('')}</div></div>`);
+  document.querySelectorAll('#opts .chip').forEach(b=>b.onclick=()=>pickSign(b));
+  showSign();
+}
+function showSign(){
+  $('#bigsign').outerHTML=`<div class="bigsign" id="bigsign">${SIGN_SVG[M.order[M.i]]}</div>`;
+  $('#dots').innerHTML=M.order.map((_,k)=>`<i class="${M.res[k]||(k===M.i?'now':'')}"></i>`).join('');
+  document.querySelectorAll('#opts .chip').forEach(b=>{b.className='chip';});
+}
+function pickSign(b){
+  if(M.done||M.lock) return;
+  const ok=b.dataset.v===M.order[M.i]; M.lock=true;
+  if(ok){ M.got++; M.res[M.i]='ok'; b.className='chip right'; S.left+=GAME.signs.bonus; SFX.ok(); bonusFlash(); }
+  else { M.res[M.i]='ko'; b.classList.add('shake','wrong'); document.querySelector(`#opts .chip[data-v="${M.order[M.i]}"]`).className='chip right'; SFX.ko(); }
+  $('#dots').innerHTML=M.order.map((_,k)=>`<i class="${M.res[k]||''}"></i>`).join('');
+  setTimeout(()=>{ if(M.kind!=='signs') return; M.lock=false; M.i++;
+    if(M.i<M.order.length) return showSign();
+    S.bonus=M.got*GAME.signs.bonus; M.done=true;
+    fb(true,`Has acertado <b>${M.got} de ${M.order.length}</b>: <b>+${S.bonus} s</b>. ${GAME.signs.learn}<small>Fuente: ${GAME.signs.source}</small>`);
+    $('#act').innerHTML=`<button class="btn green" type="button" id="take">Volver a la sala <kbd>Espacio</kbd></button>`;
+    M.take=()=>{ S.open=null; M={}; closePanel(); drawRoom(); }; $('#take').onclick=M.take; $('#take').focus(); }, ok?650:1100);
+}
+function bonusFlash(){ const p=$('#pen'); p.textContent=`+${GAME.signs.bonus} s`; p.classList.add('show','plus'); clearTimeout(p._t); p._t=setTimeout(()=>p.classList.remove('show','plus'),1300); }
+
+/* 3 · Papelera ardiendo: marcar los 4 elementos del fuego */
+const FIRE_SVG=`<svg viewBox="0 0 200 240" aria-hidden="true"><g class="flames">
+  <path class="f1" d="M100 10 C140 70 186 100 180 160 C176 205 140 230 100 230 C58 230 22 208 20 162 C18 120 48 96 66 62 C70 94 80 110 98 112 C88 72 84 40 100 10Z" fill="#D2252F"/>
+  <path class="f2" d="M102 90 C122 122 142 140 138 172 C135 198 120 212 102 212 C80 212 66 198 66 176 C66 152 82 140 90 124 C92 142 98 150 106 152 C100 132 98 112 102 90Z" fill="#F2C230"/></g>
+  <g class="steam" fill="#C9CED8"><circle cx="70" cy="150" r="22"/><circle cx="110" cy="120" r="28"/><circle cx="140" cy="160" r="20"/><circle cx="96" cy="176" r="24"/></g>
+  <path d="M50 200 h100 l-12 38 h-76z" fill="#4A5363" stroke="#2B313C" stroke-width="4"/></svg>`;
+function gFire(){
+  const all=[...GAME.fire.right.map(t=>({t,ok:true})),...GAME.fire.wrong.map(t=>({t,ok:false}))].sort(()=>Math.random()-.5);
+  M={kind:'fire',all,sel:new Set(),size:1};
+  panel('Apaga el fuego','Papelera ardiendo · incendios',
+    'El fuego crece con cada fallo. Marca los <b>4 elementos que necesita el fuego</b> y pulsa «Comprobar». Teclas 1–8.',
+    `<div class="firegame"><div class="bigfire" id="bigfire">${FIRE_SVG}</div>
+     <div class="grid2" id="opts">${all.map((o,k)=>`<button type="button" class="chip" data-k="${k}" aria-pressed="false"><span class="k">${k+1}</span><span>${o.t}</span></button>`).join('')}</div></div>`);
+  crackleStart(); SFX.flare();
+  $('#act').innerHTML=`<button class="btn" type="button" id="check">Comprobar <kbd>Intro</kbd></button>`; $('#check').onclick=checkFire;
+  document.querySelectorAll('#opts .chip').forEach(b=>b.onclick=()=>toggleFire(b));
+}
+function toggleFire(b){ if(M.done) return; const k=+b.dataset.k; M.sel.has(k)?M.sel.delete(k):M.sel.add(k); b.classList.toggle('sel'); b.setAttribute('aria-pressed',M.sel.has(k)); SFX.tap(); }
+function checkFire(){
+  if(M.done) return;
+  const good=[...M.sel].filter(k=>M.all[k].ok).length, bad=M.sel.size-good;
+  if(good===4&&bad===0){ document.querySelectorAll('#opts .chip').forEach(b=>{ if(M.all[+b.dataset.k].ok) b.className='chip right'; else b.style.opacity=.35; });
+    crackleStop(); SFX.extinguish(); $('#fb').className='fb'; $('#fb').innerHTML=''; $('#bigfire').classList.add('out'); win('fire'); }
+  else { penalize(); M.size=Math.min(1.6,M.size+.15); $('#bigfire').style.setProperty('--s',M.size); SFX.flare(); document.querySelectorAll('#opts .chip.sel').forEach(b=>{b.classList.remove('shake');void b.offsetWidth;b.classList.add('shake');});
+    fb(false,`Llevas <b>${good} de 4</b> bien${bad?` y <b>${bad}</b> que no son elementos del fuego`:''}.`); }
+}
+
+/* 4 · Pasillo bloqueado: quitar los obstáculos y dejar lo que debe quedarse */
+function gPath(){
+  M={kind:'path',left:GAME.path.filter(o=>o.bad).length};
+  panel('Despeja la vía de evacuación','Pasillo bloqueado · emergencias',
+    'Si hay un incendio, este pasillo es la salida. Pulsa para <b>retirar lo que estorba</b>, pero ojo: hay cosas que <b>deben quedarse</b>. Teclas 1–6.',
+    `<div class="corridor" id="cor"><div class="lane"></div><div class="exit"></div>
+      ${GAME.path.map((o,k)=>`<button type="button" class="obj" data-k="${k}" style="left:${o.x}%;top:${o.y}%;width:${o.w}%;height:${o.h}%" aria-label="${o.label}"><span class="n">${k+1}</span>${ICONS[o.icon]}</button>`).join('')}</div>`);
+  document.querySelectorAll('#cor .obj').forEach(b=>b.onclick=()=>pickObj(b));
+}
+function pickObj(b){
+  if(M.done||b.classList.contains('gone')) return;
+  const o=GAME.path[+b.dataset.k];
+  if(o.bad){ b.classList.add('gone'); M.left--; SFX.whoosh(); if(o.why) fb(true,o.why); else $('#fb').innerHTML='';
+    if(M.left===0) win('path'); }
+  else { b.classList.remove('shake'); void b.offsetWidth; b.classList.add('shake'); penalize(); fb(false,o.why); }
+}
+
+/* 5 · Puerta: teclear el código y abrir hacia el lado correcto */
+function gDoor(){
+  const n=Object.keys(S.digits).length;
+  if(n<GAME.rooms.length){
+    const miss=GAME.rooms.filter(r=>S.digits[r.id]==null).map(r=>r.name.toLowerCase());
+    M={}; panel('Puerta de emergencia','Salida · candado cerrado',`Al candado le faltan <b>${GAME.rooms.length-n}</b> cifras. Te queda: ${miss.join(', ')}.`,''); S.open=null; return;
+  }
+  if(S.unlocked){ doorPush(); return; }
+  M={kind:'code',typed:''};
+  const code=GAME.rooms.map(r=>r.digit).join('');
+  panel('Abre el candado','Salida · candado','Teclea el código en el orden del candado de arriba. Puedes usar el teclado numérico.',
+    `<div class="doorgame"><div class="keypad" id="kp">${[1,2,3,4,5,6,7,8,9,'⌫',0,'✓'].map(v=>`<button type="button" data-v="${v}">${v}</button>`).join('')}</div>
+     <div style="display:grid;gap:14px"><div class="code" id="code">${'<span></span>'.repeat(GAME.rooms.length)}</div></div></div>`);
+  M.code=code; document.querySelectorAll('#kp button').forEach(b=>b.onclick=()=>key(b.dataset.v));
+}
+function key(v){
+  if(M.kind!=='code') return;
+  if(v==='⌫') M.typed=M.typed.slice(0,-1);
+  else if(v==='✓') return checkCode();
+  else if(M.typed.length<M.code.length) M.typed+=v;
+  [...$('#code').children].forEach((s,i)=>s.textContent=M.typed[i]||''); SFX.key();
+  if(M.typed.length===M.code.length) setTimeout(checkCode,250);
+}
+function checkCode(){
+  if(M.kind!=='code'||M.typed.length<M.code.length) return;
+  if(M.typed===M.code){ S.unlocked=true; drawHud(); SFX.unlock(); doorPush(); }
+  else { penalize(); $('#code').classList.remove('shake'); void $('#code').offsetWidth; $('#code').classList.add('shake'); fb(false,'Código incorrecto. Míralo en el candado de arriba.'); M.typed=''; setTimeout(()=>{ if(M.kind==='code'&&M.typed==='') [...$('#code').children].forEach(s=>s.textContent=''); },400); }
+}
+function doorPush(){
+  M={kind:'push'};
+  panel('¡Candado abierto!','Salida · última prueba','Ahora abre la puerta de emergencia <b>como dice la ley</b>. Teclas 1–3.',
+    `<div class="grid2" id="opts" style="grid-template-columns:repeat(3,minmax(0,1fr))">
+      <button type="button" class="chip" data-v="in"><span class="k">1</span><span>Tirar hacia dentro</span></button>
+      <button type="button" class="chip" data-v="out"><span class="k">2</span><span>Empujar hacia fuera</span></button>
+      <button type="button" class="chip" data-v="slide"><span class="k">3</span><span>Deslizarla (corredera)</span></button></div>`);
+  document.querySelectorAll('#opts .chip').forEach(b=>b.onclick=()=>push(b));
+}
+function push(b){
+  if(M.done) return;
+  if(b.dataset.v==='out'){ M.done=true; b.className='chip right'; SFX.unlock(); fb(true,`${GAME.door.learn}<small>Fuente: ${GAME.door.source}</small>`);
+    S.running=false; $('#act').innerHTML=`<button class="btn green" type="button" id="take">Salir del almacén <kbd>Espacio</kbd></button>`;
+    M.take=()=>{S.open=null; stopAllSound(); go('win'); SFX.creak(); SFX.fanfare();}; $('#take').onclick=M.take; $('#take').focus(); }
+  else { b.classList.remove('shake'); void b.offsetWidth; b.classList.add('shake','wrong'); penalize();
+    fb(false, b.dataset.v==='in'?'Con la gente empujando para salir, una puerta que abre hacia dentro se bloquea.':'Las puertas de emergencia no pueden ser correderas ni giratorias.'); }
+}
+
+/* ======================= CONTROLES ======================= */
+function reset(){ const snd=S.sound; stopAllSound(); closePanel(); S=fresh(); S.sound=snd; M={}; closeOverlay(); setPauseLayer(); render(); }
+function setPauseLayer(){ let l=$('#pauseLayer');
+  if(S.paused){ if(!l){ l=document.createElement('button'); l.type='button'; l.id='pauseLayer'; l.className='pauselayer';
+      l.innerHTML='<span>En pausa</span><small>Pulsa aquí o la tecla P para seguir</small>'; l.onclick=togglePause; document.body.appendChild(l); } }
+  else l?.remove();
+  $('#bPause').setAttribute('aria-pressed',S.paused); }
+function togglePause(){ if(!S.running) return; S.paused=!S.paused; setPauseLayer(); S.paused?musicStop():musicStart(); }
+function toggleSound(){ S.sound=!S.sound; $('#bSound').setAttribute('aria-pressed',S.sound); audio(); if(A.master) A.master.gain.setTargetAtTime(S.sound?1:0,A.ctx.currentTime,.05); if(S.sound) SFX.tap(); }
+function toggleFull(){ try{ document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen().catch(()=>{}); }catch(e){} }
+let overlay=null, confirmReset=false;
+function closeOverlay(){ overlay?.remove(); overlay=null; confirmReset=false; }
+function showHelp(){ closeOverlay(); overlay=document.createElement('div'); overlay.className='overlay';
+  overlay.innerHTML=`<div class="box" role="dialog" aria-label="Atajos"><h2 style="font-size:clamp(26px,2.6vw,44px)">Atajos de teclado</h2><dl class="keys">
+  <dt><kbd>Espacio</kbd></dt><dd>Empezar · guardar la cifra · continuar</dd><dt><kbd>1–6</kbd></dt><dd>En la sala: abrir cada objeto (5 = salida, 6 = extra)</dd>
+  <dt><kbd>1–8</kbd></dt><dd>Dentro de una prueba: elegir opción</dd><dt><kbd>Intro</kbd></dt><dd>Comprobar</dd>
+  <dt><kbd>Esc</kbd></dt><dd>Volver a la sala</dd><dt><kbd>P</kbd></dt><dd>Pausar el tiempo</dd><dt><kbd>S</kbd></dt><dd>Sonido</dd><dt><kbd>F</kbd></dt><dd>Pantalla completa</dd>
+  <dt><kbd>R</kbd></dt><dd>Reiniciar</dd></dl><button class="btn" type="button" id="x">Cerrar</button></div>`;
+  document.body.appendChild(overlay); $('#x').onclick=closeOverlay; $('#x').focus(); }
+function askReset(){ if(S.screen==='intro'){reset();return;} closeOverlay(); overlay=document.createElement('div'); overlay.className='overlay';
+  overlay.innerHTML=`<div class="box" role="dialog" aria-label="Reiniciar"><h2 style="font-size:clamp(26px,2.6vw,44px)">¿Reiniciar el juego?</h2>
+  <p class="lead">Se pierde la partida y el tiempo vuelve a ${fmt(GAME.seconds)}.</p><div class="actions"><button class="btn" type="button" id="y">Reiniciar <kbd>R</kbd></button>
+  <button class="btn green" type="button" id="n">Seguir jugando <kbd>Esc</kbd></button></div></div>`;
+  document.body.appendChild(overlay); confirmReset=true; $('#y').onclick=reset; $('#n').onclick=closeOverlay; $('#n').focus(); }
+$('#bPause').onclick=togglePause; $('#bSound').onclick=toggleSound; $('#bFull').onclick=toggleFull; $('#bHelp').onclick=showHelp; $('#bReset').onclick=askReset;
+
+document.addEventListener('keydown',e=>{
+  if(e.metaKey||e.ctrlKey||e.altKey) return;
+  const k=e.key.toLowerCase(), inRange=e.target.type==='range';
+  if(overlay){ if(k==='escape') closeOverlay(); else if(k==='r'&&confirmReset) reset(); return; }
+  if(k==='escape'){ if(S.open) leavePanel(); return; }
+  if(k==='p') return togglePause(); if(k==='s') return toggleSound(); if(k==='f') return toggleFull(); if(k==='?') return showHelp(); if(k==='r') return askReset();
+  if(S.paused) return;
+  if(k===' '){ if(e.target.tagName==='BUTTON'&&e.target.id!=='take'&&!S.open) return; e.preventDefault();
+    if(S.screen==='intro') return startGame(); if(M.take) return M.take(); if(S.screen==='win'||S.screen==='lose') return go('summary'); return; }
+  if(k==='enter'){ if(M.kind==='rail'){e.preventDefault();return checkRail();} if(M.kind==='fire'){e.preventDefault();return checkFire();} if(M.kind==='code'){e.preventDefault();return checkCode();} return; }
+  if(inRange) return;
+  if(k==='backspace'&&M.kind==='code'){ e.preventDefault(); return key('⌫'); }
+  if(!/^[0-9]$/.test(k)) return;
+  const n=+k;
+  if(S.screen==='room'&&!S.open){ const h=HOTS[n-1]; if(h) openGame(h.id); return; }
+  if(M.kind==='elec'){ const b=document.querySelectorAll('#opts .chip')[n-1]; if(b) pickRule(b); }
+  else if(M.kind==='signs'){ const b=document.querySelectorAll('#opts .chip')[n-1]; if(b) pickSign(b); }
+  else if(M.kind==='fire'){ const b=document.querySelectorAll('#opts .chip')[n-1]; if(b) toggleFire(b); }
+  else if(M.kind==='path'){ const b=document.querySelectorAll('#cor .obj')[n-1]; if(b) pickObj(b); }
+  else if(M.kind==='code'){ key(String(n)); }
+  else if(M.kind==='push'){ const b=document.querySelectorAll('#opts .chip')[n-1]; if(b) push(b); }
+});
+
+/* conservar la partida si la página se actualiza mientras está abierta */
+function start(data){ if(data&&data.S){ S=Object.assign(fresh(),data.S,{open:null}); if(S.running) S.paused=true; } render(); setPauseLayer(); requestAnimationFrame(tick); }
+window.claude?.hot?.snapshot?.(()=>({S}));
+window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});
+</script>
+
+</body>
+</html>
