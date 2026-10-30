@@ -3,26 +3,31 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="Escape room sobre condiciones de seguridad en el trabajo: corrige los riesgos del almacén, consigue las 4 cifras del candado y sal antes de que se acabe el tiempo.">
+<meta name="description" content="Dos escape rooms sobre condiciones de seguridad en el trabajo: el almacén y el taller de informática. Corrige los riesgos, consigue las 4 cifras del candado y sal antes de que se acabe el tiempo.">
 <meta name="theme-color" content="#0F1218">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <meta property="og:type"        content="website">
 <meta property="og:url"         content="https://escapa-del-almacen.web.app/">
-<meta property="og:title"       content="Escapa del almacén · Condiciones de seguridad">
-<meta property="og:description" content="Escape room sobre condiciones de seguridad en el trabajo: corrige los riesgos del almacén, consigue las 4 cifras del candado y sal antes de que se acabe el tiempo.">
+<meta property="og:title"       content="Escape rooms · Condiciones de seguridad">
+<meta property="og:description" content="Dos escape rooms sobre condiciones de seguridad en el trabajo: el almacén y el taller de informática. Corrige los riesgos, consigue las 4 cifras del candado y sal antes de que se acabe el tiempo.">
 <meta property="og:image"       content="https://escapa-del-almacen.web.app/og-image.jpg">
-<title>Escapa del almacén</title>
-<meta name="claude:viewport-fit-sides" content="cover">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Barlow:wght@400;600;700&display=swap">
+<title>Escape rooms · Condiciones de seguridad</title>
+<link rel="preload" href="/fonts/oswald-700-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/barlow-400-latin.woff2" as="font" type="font/woff2" crossorigin>
 <style>
+/* Tipografías alojadas en la propia web (licencia OFL, ver /fonts): no se pide nada a Google */
+@font-face{font-family:"Oswald";font-style:normal;font-weight:500;font-display:swap;src:url(/fonts/oswald-500-latin.woff2) format("woff2")}
+@font-face{font-family:"Oswald";font-style:normal;font-weight:700;font-display:swap;src:url(/fonts/oswald-700-latin.woff2) format("woff2")}
+@font-face{font-family:"Barlow";font-style:normal;font-weight:400;font-display:swap;src:url(/fonts/barlow-400-latin.woff2) format("woff2")}
+@font-face{font-family:"Barlow";font-style:normal;font-weight:600;font-display:swap;src:url(/fonts/barlow-600-latin.woff2) format("woff2")}
+@font-face{font-family:"Barlow";font-style:normal;font-weight:700;font-display:swap;src:url(/fonts/barlow-700-latin.woff2) format("woff2")}
 /* Layout: HUD arriba (tiempo · candado de 4 cifras · progreso); debajo, la sala del almacén en 16:9 con objetos que se pulsan; cada objeto abre un minijuego en un panel sobre la sala. Un solo look oscuro a propósito: almacén iluminado solo por las luces de emergencia. */
 :root{
   --night:#0F1218; --wall:#1B212C; --floor:#141921; --panel:#1C2230; --line:#2E3747;
   --text:#F4F1E8; --muted:#A7AEBB;
-  --go:#1E9A5B; --go-soft:#7BE0A8; --stop:#D2252F; --stop-soft:#FF8A8F; --warn:#F2C230; --info:#3B7BD6;
+  --go:#1E9A5B; --go-deep:#157A45; --go-soft:#7BE0A8; --stop:#D2252F; --stop-soft:#FF8A8F; --warn:#F2C230; --info:#3B7BD6;
   --display:'Oswald','Arial Narrow',Impact,sans-serif;
   --body:'Barlow','Segoe UI',Arial,sans-serif;
   color-scheme:dark;
@@ -43,7 +48,7 @@ body.free .beacon{background:radial-gradient(ellipse 80% 70% at 85% 50%,rgba(30,
 .hud{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
 .timer{font-family:var(--display);font-weight:700;font-size:clamp(38px,5.2vw,96px);line-height:1;font-variant-numeric:tabular-nums;min-width:4ch}
 .timer small{display:block;font-family:var(--body);font-size:clamp(12px,1vw,18px);font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
-.timer.low{color:var(--stop);animation:pulse 1s ease-in-out infinite}
+.timer.low{color:#FF5A61;animation:pulse 1s ease-in-out infinite}
 .timer.paused #clock{opacity:.35}
 .timer .pen{font-size:.4em;color:var(--stop-soft);margin-left:.3em;opacity:0;transition:opacity .2s}
 .timer .pen.show{opacity:1}
@@ -55,7 +60,7 @@ body.free .beacon{background:radial-gradient(ellipse 80% 70% at 85% 50%,rgba(30,
 .slots{display:flex;gap:clamp(6px,.8vw,14px)}
 .slot{display:grid;justify-items:center;gap:4px}
 .slot b{width:clamp(42px,4.2vw,80px);height:clamp(54px,5.4vw,100px);border-radius:10px;border:3px solid var(--line);background:#0B0E13;
-  display:grid;place-items:center;font-family:var(--display);font-size:clamp(32px,3.6vw,72px);color:#3A4252;font-variant-numeric:tabular-nums;transition:.3s}
+  display:grid;place-items:center;font-family:var(--display);font-size:clamp(32px,3.6vw,72px);color:var(--muted);font-variant-numeric:tabular-nums;transition:.3s}
 .slot span{font-size:clamp(10px,.8vw,15px);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
 .slot.on b{border-color:var(--warn);color:var(--warn);box-shadow:0 0 22px rgba(242,194,48,.35)}
 .lock.open .slot.on b{border-color:var(--go);color:var(--go-soft);box-shadow:0 0 26px rgba(30,154,91,.5)}
@@ -75,7 +80,7 @@ h2{font-size:clamp(28px,3.4vw,62px)}
 .btn{all:unset;box-sizing:border-box;cursor:pointer;justify-self:start;display:inline-flex;align-items:center;gap:.6em;font-family:var(--display);font-weight:700;
   text-transform:uppercase;letter-spacing:.06em;font-size:clamp(18px,1.8vw,32px);padding:.45em 1em;border-radius:12px;background:var(--warn);color:#14161C;transition:transform .15s}
 .btn:hover{transform:translateY(-2px)} .btn:focus-visible{outline:4px solid var(--text);outline-offset:4px}
-.btn.green{background:var(--go);color:#fff} .btn.ghost{background:transparent;color:var(--text);border:2px solid var(--line)}
+.btn.green{background:var(--go-deep);color:#fff} .btn.green kbd{opacity:1} .btn.ghost{background:transparent;color:var(--text);border:2px solid var(--line)}
 .btn[disabled]{opacity:.4;pointer-events:none}
 .btn kbd{font-family:var(--body);font-size:.6em;border:2px solid currentColor;border-radius:6px;padding:.05em .4em;opacity:.8}
 .split{display:grid;grid-template-columns:1.25fr 1fr;gap:clamp(20px,4vw,80px);align-items:center}
@@ -106,7 +111,7 @@ h2{font-size:clamp(28px,3.4vw,62px)}
 .dots{display:flex;gap:8px}.dots i{width:14px;height:14px;border-radius:50%;background:var(--line)}.dots i.ok{background:var(--go)}.dots i.ko{background:var(--stop)}.dots i.now{background:var(--warn)}
 /* estrellas */
 .stars{display:flex;gap:.15em;font-size:clamp(40px,4.6vw,84px);line-height:1}
-.stars span{color:#2E3747}.stars span.on{color:var(--warn);text-shadow:0 0 20px rgba(242,194,48,.55);animation:pop .5s cubic-bezier(.3,1.6,.5,1) both}
+.stars span{color:#5D6676}.stars span.on{color:var(--warn);text-shadow:0 0 20px rgba(242,194,48,.55);animation:pop .5s cubic-bezier(.3,1.6,.5,1) both}
 .stars span:nth-child(2){animation-delay:.2s}.stars span:nth-child(3){animation-delay:.4s}
 @keyframes pop{from{transform:scale(0)}to{transform:none}}
 .best{font-size:clamp(14px,1.2vw,22px);color:var(--muted);margin:0}.best b{color:var(--warn)}
@@ -114,15 +119,17 @@ h2{font-size:clamp(28px,3.4vw,62px)}
 /* ---------- panel de minijuego ---------- */
 .panel{position:absolute;inset:0;z-index:10;display:grid;place-items:center;background:rgba(8,10,14,.82);backdrop-filter:blur(4px);animation:enter .3s ease-out both}
 .panel .box{width:min(1400px,100%);max-height:100%;overflow:auto;background:var(--panel);border:3px solid var(--line);border-radius:20px;
-  padding:clamp(16px,2.4vw,40px);display:grid;gap:clamp(12px,1.8vh,24px)}
+  padding:clamp(16px,2.4vw,40px);display:grid;grid-auto-rows:max-content;gap:clamp(12px,1.8vh,24px)}
 .panel .top{display:flex;justify-content:space-between;gap:16px;align-items:start;flex-wrap:wrap}
 .ins{font-size:clamp(17px,1.6vw,30px);color:var(--muted);margin:0;line-height:1.35}
 .ins b{color:var(--text)}
 .fb{display:flex;gap:.6em;align-items:flex-start;font-size:clamp(17px,1.6vw,30px);line-height:1.35;border-radius:12px;padding:.6em .9em}
 .fb:empty{display:none}
 .fb.ok{background:rgba(30,154,91,.16);border-left:8px solid var(--go)} .fb.ko{background:rgba(210,37,47,.16);border-left:8px solid var(--stop)}
-.fb .t{font-family:var(--display);font-weight:700;text-transform:uppercase;white-space:nowrap}
+.fb .t{font-family:var(--display);font-weight:700;text-transform:uppercase;white-space:nowrap;flex:none}
+.fb>span:last-child{min-width:0}
 .fb.ok .t{color:var(--go-soft)} .fb.ko .t{color:var(--stop-soft)}
+.fb.tip{background:rgba(242,194,48,.12);border-left:8px solid var(--warn)} .fb.tip .t{color:var(--warn)}
 .fb small{display:block;color:var(--muted);font-size:.72em;margin-top:.2em}
 .prize{display:flex;align-items:center;gap:16px;font-family:var(--display);font-size:clamp(18px,1.6vw,30px);text-transform:uppercase;letter-spacing:.06em}
 .prize b{font-size:2.6em;line-height:1;color:var(--warn);text-shadow:0 0 22px rgba(242,194,48,.6)}
@@ -133,7 +140,7 @@ h2{font-size:clamp(28px,3.4vw,62px)}
 @media (hover:hover){.chip:hover{border-color:var(--info);transform:translateY(-2px)}} .chip:focus-visible{outline:4px solid var(--warn);outline-offset:3px}
 .chip .k{flex:none;display:grid;place-items:center;width:1.7em;height:1.7em;border-radius:9px;background:#0B0E13;font-family:var(--display);font-size:.8em;color:var(--warn)}
 .chip.sel{border-color:var(--warn);background:#2A2510}
-.chip.right{border-color:var(--go);background:#11301F;cursor:default} .chip.right .k{background:var(--go);color:#fff}
+.chip.right{border-color:var(--go);background:#11301F;cursor:default} .chip.right .k{background:var(--go-deep);color:#fff}
 .chip.wrong{border-color:var(--stop);background:#3A1316}
 .shake{animation:shake .42s}
 @keyframes shake{20%,60%{transform:translateX(-10px)}40%,80%{transform:translateX(10px)}}
@@ -178,6 +185,102 @@ input[type=range]:focus-visible{outline:4px solid var(--warn);outline-offset:4px
 .obj .n{position:absolute;top:-8px;left:-8px;width:1.6em;height:1.6em;border-radius:50%;background:#0B0E13;border:2px solid var(--warn);color:var(--warn);
   font-family:var(--display);font-size:clamp(12px,1vw,18px);display:grid;place-items:center}
 
+/* vía de evacuación (laberinto con humo) */
+.maze{--cols:15;display:grid;grid-template-columns:repeat(var(--cols),minmax(0,1fr));width:min(100%,calc(46vh * 15 / 9));justify-self:center;aspect-ratio:15/9;
+  border-radius:12px;overflow:hidden;border:3px solid var(--line);background:#0B0E13;touch-action:manipulation;user-select:none}
+.mc{position:relative;display:grid;place-items:center;min-width:0;cursor:pointer}
+.mc.fog{background:radial-gradient(circle at 35% 35%,#2B313C,#1A1E26 75%)}
+.mc.fog::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 70% 70%,rgba(201,206,216,.10),transparent 60%);animation:smoke 4s ease-in-out infinite alternate}
+@keyframes smoke{to{opacity:.3;transform:scale(1.15)}}
+.mc.wall{background:#3A4252;box-shadow:inset 0 -4px 0 rgba(0,0,0,.25);cursor:default}
+.mc.fl{background:#161B24}
+.mc.tr::after{content:"";width:24%;height:24%;border-radius:50%;background:rgba(123,224,168,.4)}
+.mc .ar{position:absolute;inset:16%;border-radius:4px;background:var(--go);display:grid;place-items:center;box-shadow:0 0 12px rgba(123,224,168,.7);z-index:1}
+.mc .ar svg{width:80%;height:80%}
+.mc.ex{background:var(--go);box-shadow:0 0 18px rgba(123,224,168,.8);z-index:2}
+.mc.ex svg{width:80%;height:80%}
+.mc.ex.lkd{background:#5D6676;box-shadow:none}
+.mc.ex .pad{position:absolute;right:4%;bottom:4%;width:42%;height:42%}
+.mc.ob svg{width:86%;height:86%}
+.mc.me::before{content:"";position:absolute;inset:18%;border-radius:50%;background:var(--warn);border:3px solid #14161C;box-shadow:0 0 14px rgba(242,194,48,.8);z-index:3;animation:none}
+.mc.bump{animation:shake .35s}
+.mazewrap{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:clamp(12px,2vw,32px);align-items:center}
+.dpad{display:grid;grid-template-columns:repeat(3,clamp(48px,4.4vw,72px));grid-template-rows:repeat(3,clamp(48px,4.4vw,72px));gap:6px}
+.dpad button{all:unset;box-sizing:border-box;cursor:pointer;border-radius:14px;background:#141924;border:3px solid var(--line);display:grid;place-items:center;touch-action:manipulation}
+.dpad button svg{width:55%;height:55%}
+.dpad button:active{background:#2A2510;border-color:var(--warn)}
+.dpad button:focus-visible{outline:4px solid var(--warn);outline-offset:2px}
+@media (hover:hover){.dpad button:hover{border-color:var(--warn)}}
+.dpad .u{grid-area:1/2}.dpad .l{grid-area:2/1}.dpad .r{grid-area:2/3}.dpad .d{grid-area:3/2}
+.mazebar{display:flex;gap:16px;flex-wrap:wrap;align-items:center;justify-content:center;font-size:clamp(13px,1.1vw,19px);color:var(--muted)}
+.mazebar i{display:inline-block;width:1em;height:1em;border-radius:3px;vertical-align:-.15em;margin-right:.35em}
+.mazebar b{color:var(--text)}
+/* portada: elegir sala */
+.picks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(12px,2vw,32px)}
+.pick{all:unset;box-sizing:border-box;cursor:pointer;display:grid;grid-template-columns:auto minmax(0,1fr);gap:clamp(12px,1.6vw,26px);align-items:start;
+  background:var(--panel);border:3px solid var(--line);border-radius:20px;padding:clamp(14px,1.8vw,30px);transition:border-color .15s,transform .15s}
+.pick:focus-visible{outline:4px solid var(--warn);outline-offset:4px}
+@media (hover:hover){.pick:hover{border-color:var(--warn);transform:translateY(-3px)}}
+.pick-art{width:clamp(64px,7vw,120px);aspect-ratio:1;border-radius:16px;background:#0B0E13;display:grid;place-items:center;border:2px solid var(--line)}
+.pick-art svg{width:72%;height:72%}
+.pick-body{display:grid;gap:8px;min-width:0}
+.pick-n{font-family:var(--display);letter-spacing:.16em;text-transform:uppercase;color:var(--warn);font-size:clamp(13px,1vw,18px)}
+.pick-t{font-family:var(--display);font-weight:700;font-size:clamp(24px,2.4vw,44px);line-height:1.05}
+.pick-d{color:var(--muted);font-size:clamp(15px,1.2vw,21px);line-height:1.35}
+.pick-tags{display:flex;flex-wrap:wrap;gap:6px}
+.pick-tags i{font-style:normal;font-size:clamp(12px,.9vw,16px);font-weight:700;padding:.2em .6em;border-radius:999px;background:#0B0E13;border:2px solid var(--line)}
+.pick-best{font-size:clamp(13px,1vw,18px);color:var(--muted)} .pick-best b{color:var(--warn)}
+.pick-go{justify-self:start;font-size:clamp(16px,1.4vw,26px);pointer-events:none}
+.legal{margin:0;display:flex;flex-wrap:wrap;gap:4px 22px;font-size:clamp(14px,1vw,17px)}
+.legal a{color:var(--muted);text-underline-offset:.2em}
+.legal a:hover{color:var(--text)} .legal a:focus-visible{outline:3px solid var(--warn);outline-offset:3px;border-radius:4px}
+/* rack en llamas */
+.co2game{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.6fr);gap:clamp(16px,3vw,48px);align-items:center}
+.rackfire{--s:1;justify-self:center;width:min(100%,260px)}
+.rackfire svg{display:block;width:100%;height:auto;overflow:visible}
+.rackfire .flames{transform-origin:50% 100%;transform:scale(var(--s));transition:transform .25s}
+.rackfire .f1{transform-origin:50% 95%;animation:flick .5s ease-in-out infinite alternate}
+.rackfire .f2{transform-origin:50% 95%;animation:flick .35s ease-in-out infinite alternate-reverse}
+.rackfire .gas{opacity:0;transition:opacity .2s}.rackfire.spraying .gas{opacity:.85}
+.exts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.ext{all:unset;box-sizing:border-box;cursor:pointer;display:grid;justify-items:center;gap:8px;background:#141924;border:3px solid var(--line);border-radius:14px;padding:12px 8px;font-weight:700;font-size:clamp(15px,1.3vw,24px)}
+.ext svg{height:clamp(80px,12vh,150px);width:auto}
+.ext .k{font-family:var(--display);color:var(--warn);font-size:.8em}
+.ext:focus-visible{outline:4px solid var(--warn);outline-offset:3px}
+@media (hover:hover){.ext:hover{border-color:var(--info)}}
+.ext.right{border-color:var(--go);background:#11301F}.ext.wrong{border-color:var(--stop);background:#3A1316}
+.hold{all:unset;box-sizing:border-box;cursor:pointer;user-select:none;-webkit-user-select:none;touch-action:none;display:grid;place-items:center;text-align:center;gap:6px;
+  min-height:clamp(110px,16vh,170px);border-radius:18px;background:#0F3B26;border:4px solid var(--go);font-family:var(--display);font-weight:700;text-transform:uppercase;font-size:clamp(20px,2vw,34px)}
+.hold small{font-family:var(--body);text-transform:none;font-weight:600;font-size:.55em;color:var(--muted)}
+.hold.on{background:var(--go-deep)} .hold.on small{color:#fff}
+.meterbar{height:22px;border-radius:999px;background:#0B0E13;border:2px solid var(--line);overflow:hidden}
+.meterbar i{display:block;height:100%;width:100%;background:linear-gradient(90deg,var(--warn),var(--stop));transition:width .1s linear}
+/* termostato */
+.dials{display:grid;gap:clamp(12px,2vh,22px)}
+.dial{display:grid;grid-template-columns:minmax(120px,.5fr) minmax(0,1fr) minmax(110px,.4fr);gap:16px;align-items:center;background:#141924;border:2px solid var(--line);border-radius:14px;padding:12px 16px}
+.dial label{font-weight:700;font-size:clamp(16px,1.4vw,26px)}
+.dial output{font-family:var(--display);font-size:clamp(28px,2.8vw,52px);text-align:right;font-variant-numeric:tabular-nums}
+.dial output.good{color:var(--go-soft)} .dial output.bad{color:var(--stop-soft)}
+.ctx{display:flex;flex-wrap:wrap;gap:8px}.ctx i{font-style:normal;font-weight:700;font-size:clamp(13px,1.1vw,19px);padding:.3em .7em;border-radius:999px;background:#2A2510;border:2px solid var(--warn)}
+/* estantería */
+.shelfgame{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(16px,3vw,48px);align-items:center}
+.levels{display:grid;gap:10px;border-left:10px solid #4A5363;border-right:10px solid #4A5363;padding:0 10px}
+.level{all:unset;box-sizing:border-box;cursor:pointer;min-height:clamp(70px,10vh,110px);border-bottom:10px solid #4A5363;display:flex;align-items:end;justify-content:center;gap:10px;padding:6px;border-radius:4px}
+.level span.lab{font-size:clamp(12px,1vw,16px);color:var(--muted);align-self:center}
+.level:focus-visible{outline:4px solid var(--warn)}
+.level.armed{background:rgba(242,194,48,.12)}
+.level .crate{display:grid;justify-items:center;font-weight:700;font-size:clamp(12px,1vw,16px)}
+.level .crate svg{height:clamp(40px,6vh,70px);width:auto}
+#boxes .chip svg{height:1.6em;width:auto}
+/* busca los peligros */
+.hunt{position:relative;width:100%;border-radius:14px;overflow:hidden;border:2px solid var(--line)}
+.hunt svg{display:block;width:100%;height:auto;max-height:52vh}
+.hunt .hz{cursor:pointer}
+.hunt .hz .ring{fill:transparent;stroke:transparent;stroke-width:6;pointer-events:all}
+.hunt .hz.found .ring{stroke:var(--go);stroke-dasharray:none}
+.hunt .hz.miss .ring{stroke:var(--stop)}
+.hunt .hz:focus-visible .ring{stroke:var(--warn)}
+.huntbar{display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;font-size:clamp(14px,1.2vw,22px);color:var(--muted)} .huntbar b{color:var(--text)}
 /* teclado de la puerta */
 .keypad{display:grid;grid-template-columns:repeat(3,minmax(0,90px));gap:10px;justify-content:start}
 .keypad button{all:unset;cursor:pointer;height:72px;border-radius:12px;background:#141924;border:3px solid var(--line);display:grid;place-items:center;
@@ -206,9 +309,9 @@ input[type=range]:focus-visible{outline:4px solid var(--warn);outline-offset:4px
 .fly{position:fixed;z-index:80;font-family:var(--display);font-weight:700;color:var(--warn);pointer-events:none;line-height:1;
   text-shadow:0 0 24px rgba(242,194,48,.8);transition:transform .9s cubic-bezier(.6,-0.2,.3,1.2)}
 
-.ctrl{position:fixed;z-index:30;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(24px + env(safe-area-inset-bottom,0px));display:flex;gap:8px;opacity:.3;transition:opacity .2s}
-.ctrl:hover,.ctrl:focus-within{opacity:1}
-.ctrl button{all:unset;cursor:pointer;background:var(--panel);border:2px solid var(--line);border-radius:10px;padding:6px 12px;font-weight:600;font-size:14px}
+.ctrl{position:fixed;z-index:30;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(24px + env(safe-area-inset-bottom,0px));display:flex;gap:8px}
+.ctrl button{all:unset;cursor:pointer;background:var(--panel);border:2px solid var(--line);border-radius:10px;padding:6px 12px;font-weight:600;font-size:14px;color:var(--muted)}
+.ctrl button:hover,.ctrl button:focus-visible{color:var(--text);border-color:var(--muted)}
 .ctrl button:focus-visible{outline:3px solid var(--warn)} .ctrl button[aria-pressed="true"]{border-color:var(--warn)}
 .overlay{position:fixed;inset:0;z-index:90;background:rgba(8,10,14,.88);display:grid;place-items:center;padding:24px}
 .overlay .box{background:var(--panel);border:2px solid var(--line);border-radius:18px;padding:clamp(20px,3vw,40px);max-width:780px;width:100%;display:grid;gap:18px}
@@ -221,6 +324,7 @@ input[type=range]:focus-visible{outline:4px solid var(--warn);outline-offset:4px
   .seq{grid-template-columns:1fr 1fr} .door{max-width:240px} .room{width:100%} .hud{justify-content:center}
   .hot .tag{font-size:11px}
 }
+body.picking .lock,body.picking .progress{visibility:hidden}
 /* pausa */
 .pauselayer{all:unset;position:fixed;inset:0;z-index:70;cursor:pointer;display:grid;place-content:center;gap:10px;text-align:center;background:rgba(8,10,14,.78);backdrop-filter:blur(3px)}
 .pauselayer span{font-family:var(--display);font-weight:700;text-transform:uppercase;font-size:clamp(44px,7vw,120px);color:var(--warn)}
@@ -236,14 +340,21 @@ input[type=range]:focus-visible{outline:4px solid var(--warn);outline-offset:4px
   .hint{font-size:12px}
   .signgame{grid-template-columns:1fr} .bigsign{width:150px}
   .corridor{aspect-ratio:16/9}
+  .maze{width:100%}
+  .picks,.co2game,.shelfgame{grid-template-columns:1fr} .dial{grid-template-columns:1fr auto} .dial input{grid-column:1/-1;grid-row:2}
+  .pick{grid-template-columns:1fr} .pick-art{display:none} .rackfire{width:150px;margin-top:30px}
+  .mazewrap{grid-template-columns:1fr;justify-items:center}
+  .dpad{grid-template-columns:repeat(3,58px);grid-template-rows:repeat(3,58px)}
 }
+/* en pantallas que hacen scroll, sitio abajo para que los controles y la cinta no tapen el final */
+@media (max-width:900px) and (min-height:621px){ .app{height:auto;min-height:100%;padding-bottom:84px} }
 @media (max-width:900px), (max-height:620px){
   .ctrl .sc,#bFull,#bHelp{display:none}
   .ctrl button{font-size:13px;padding:5px 9px}
 }
 @media (max-height:620px){
   .hot{place-items:start center}
-  .hot.up{place-items:end center} .hot.up .tag{transform:translateY(calc(100% + 6px))}
+  .hot.up,.hot.low{place-items:end center} .hot.up .tag,.hot.low .tag{transform:translateY(calc(100% + 6px))}
   .hot .tag{transform:translateY(calc(-100% - 6px));white-space:normal;text-align:center;max-width:110%;line-height:1.1}
   .progress{display:none}
   .ctrl{top:8px;bottom:auto}
@@ -252,6 +363,9 @@ input[type=range]:focus-visible{outline:4px solid var(--warn);outline-offset:4px
   .lock>svg{width:30px} .slot b{width:40px;height:48px;font-size:30px} .slot span{font-size:10px}
   .progress{font-size:12px}
   .room{width:min(100%,calc((100vh - 116px) * 16 / 9))}
+  .maze{width:min(100%,calc(78vh * 15 / 9))}
+  .mazewrap{grid-template-columns:minmax(0,1fr) auto;justify-items:stretch}
+  .dpad{grid-template-columns:repeat(3,50px);grid-template-rows:repeat(3,50px)}
   .hint{font-size:11px;line-height:1.2}
 }
 @media (orientation:portrait) and (max-width:700px){
@@ -260,7 +374,6 @@ input[type=range]:focus-visible{outline:4px solid var(--warn);outline-offset:4px
 @media (pointer:coarse){
   kbd,.hot .tag kbd{display:none}
   #bHelp{display:none}
-  .ctrl{opacity:.85}
 }
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 </style>
@@ -285,7 +398,7 @@ input[type=range]:focus-visible{outline:4px solid var(--warn);outline-offset:4px
   <section class="stage" id="stage" aria-live="polite"></section>
 </main>
 
-<nav class="ctrl" aria-label="Controles del presentador">
+<nav class="ctrl" aria-label="Controles del juego">
   <button type="button" id="bPause" aria-pressed="false">Pausa<span class="sc"> (P)</span></button>
   <button type="button" id="bSound" aria-pressed="true">Sonido<span class="sc"> (S)</span></button>
   <button type="button" id="bFull">Pantalla completa<span class="sc"> (F)</span></button>
@@ -298,17 +411,6 @@ input[type=range]:focus-visible{outline:4px solid var(--warn);outline-offset:4px
 const GAME = {
   seconds: 240,          // 4 minutos
   penalty: 10,           // segundos que resta cada fallo
-  // Las pruebas de la sala, en el orden de las cifras del candado
-  rooms: [
-    { id:'elec', key:'1', name:'Cuadro eléctrico', short:'Eléctrico', digit:5,
-      learn:'Para trabajar sin tensión: cortar, bloquear, verificar, poner a tierra y en cortocircuito, y señalizar.', source:'INSST · Riesgo eléctrico' },
-    { id:'rail', key:'2', name:'Altillo', short:'Altillo', digit:9,
-      learn:'Barandilla de 90 cm como mínimo; obligatoria si la caída es de 2 m o más.', source:'RD 486/1997 · Anexo I, ap. 3' },
-    { id:'fire', key:'3', name:'Papelera ardiendo', short:'Fuego', digit:4,
-      learn:'El fuego necesita combustible, comburente, foco de ignición y reacción en cadena. Si quitas uno, se apaga.', source:'INSST · Seguridad contra incendios' },
-    { id:'path', key:'4', name:'Pasillo bloqueado', short:'Pasillo', digit:1,
-      learn:'Vías de evacuación siempre libres; pasillos de 1 m de ancho como mínimo.', source:'RD 486/1997 · Anexo I, ap. 5 y 10 · Anexo II' }
-  ],
   rules: ['Cortar todas las fuentes de tensión','Bloquear los aparatos de corte','Verificar que no hay tensión','Poner a tierra y en cortocircuito','Señalizar la zona de trabajo'],
   // prueba extra (opcional): cada acierto suma segundos
   signs: { bonus:5, source:'RD 485/1997 · Anexos II y III',
@@ -316,21 +418,82 @@ const GAME = {
     list:[{id:'pro',name:'Prohibición'},{id:'adv',name:'Advertencia de peligro'},{id:'obl',name:'Obligación'},{id:'sal',name:'Salvamento o socorro'}] },
   fire: { right:['Combustible','Comburente (oxígeno)','Foco de ignición (calor)','Reacción en cadena'],
           wrong:['Agua','Humo','Ceniza','Luz'] },
-  path: [ // obstáculos (bad:true) y cosas que deben quedarse (bad:false)
-    { label:'Cajas apiladas', bad:true,  x:14, y:58, w:13, h:34, icon:'boxes' },
-    { label:'Regletas y cables', bad:true, x:31, y:80, w:13, h:14, icon:'cable', why:'Cables en el paso: tropiezos y riesgo de incendio.' },
-    { label:'Carro de material', bad:true, x:48, y:62, w:13, h:30, icon:'cart' },
-    { label:'Caja con monitores', bad:true, x:64, y:66, w:11, h:26, icon:'box' },
-    { label:'Extintor', bad:false, x:6, y:24, w:5, h:22, icon:'ext', why:'El extintor se queda: tiene que estar a mano y señalizado.' },
-    { label:'Señal de salida', bad:false, x:46, y:14, w:14, h:12, icon:'sign', why:'La señal de salida se queda: indica el camino de evacuación.' }
+  // vía de evacuación: plano generado al azar en cada partida
+  maze: { roomsX:7, roomsY:4, blocked:2, loops:4,
+    obstacles:[{icon:'boxes',name:'cajas apiladas'},{icon:'cart',name:'un carro de material'},{icon:'cable',name:'cables y regletas'}] },
+  // taller: reguladores del ambiente
+  clima: [
+    { id:'t', name:'Temperatura', unit:' °C', min:10, max:35, step:1, start:31, ok:v=>v>=17&&v<=27,
+      bad:v=>v<17?'hace demasiado frío':'hace demasiado calor', rule:'17–27 °C en trabajos sedentarios' },
+    { id:'h', name:'Humedad', unit:' %', min:10, max:90, step:5, start:25, ok:v=>v>=50&&v<=70,
+      bad:v=>v<30?'el aire está demasiado seco':v<50?'con electricidad estática el mínimo es el 50 %':'hay demasiada humedad', rule:'30–70 %, y como mínimo 50 % si hay electricidad estática' },
+    { id:'l', name:'Iluminación', unit:' lux', min:50, max:1500, step:50, start:150, ok:v=>v>=500,
+      bad:()=>'hay poca luz para un trabajo de precisión', rule:'500 lux como mínimo para exigencias visuales altas' }
   ],
-  door: { learn:'Las puertas de emergencia se abren hacia fuera, sin llave, y no pueden ser correderas ni giratorias.', source:'RD 486/1997 · Anexo I, ap. 10' }
+  shelf: [ {id:'mon',name:'Monitores',kg:25,icon:'box'}, {id:'pc',name:'Torres de PC',kg:12,icon:'boxes'}, {id:'cab',name:'Cables',kg:3,icon:'cable'} ],
+  hunt: [
+    { id:'cristal', bad:true,  name:'Puerta de cristal sin señalizar', why:'Las puertas transparentes tienen que llevar una señal a la altura de la vista para que nadie choque.' },
+    { id:'pcopen',  bad:true,  name:'PC abierto y enchufado', why:'Antes de abrir un equipo hay que desenchufarlo: se trabaja sin tensión.' },
+    { id:'regletas',bad:true,  name:'Regletas encadenadas', why:'Regletas enchufadas unas a otras: se sobrecargan y pueden provocar un incendio.' },
+    { id:'cable',   bad:true,  name:'Cable en la zona de paso', why:'Las zonas de paso tienen que estar libres: un cable cruzado provoca tropiezos.' },
+    { id:'ext',     bad:true,  name:'Extintor tapado por cajas', why:'Los extintores tienen que ser de fácil acceso: nada delante.' },
+    { id:'salida',  bad:false, name:'Señal de salida', why:'La señal de salida está bien: indica por dónde evacuar.' },
+    { id:'monitor', bad:false, name:'Monitor', why:'El monitor está bien colocado: no es un peligro.' },
+    { id:'papelera',bad:false, name:'Papelera', why:'La papelera está en su sitio: no estorba.' }
+  ],
+  kit: { bonus:5, source:'RD 486/1997 · Anexo VI',
+    learn:'El botiquín tiene que llevar como mínimo desinfectantes, gasas estériles, algodón, venda, esparadrapo, apósitos, tijeras, pinzas y guantes desechables.',
+    right:['Gasas estériles','Esparadrapo','Guantes desechables','Desinfectante'], wrong:['Pastillas para el dolor','Crema solar','Jarabe para la tos','Pomada antiinflamatoria'] }
 };
+
+// Las dos salas. Las cifras del candado salen al azar en cada partida.
+const SCENES = {
+  almacen: { id:'almacen', title:'Escapa del almacén', place:'el almacén', key:'1', best:'escapa-best',
+    blurb:'Un almacén lleno de riesgos: cuadro eléctrico, un altillo sin barandilla, fuego y una salida entre el humo.',
+    tags:['Electricidad','Caídas','Fuego','Evacuación'],
+    extra:{ id:'signs', label:'Extra: señales', name:'Señales (extra)', stat:'Extra señales', hint:'La prueba de <b>señales</b> es opcional y suma tiempo.', learn:()=>GAME.signs.learn, source:()=>GAME.signs.source },
+    door:{ title:'Puerta de emergencia', learn:'Las puertas de emergencia se abren hacia fuera, sin llave, y no pueden ser correderas ni giratorias.', source:'RD 486/1997 · Anexo I, ap. 10',
+      q:'Ahora abre la puerta de emergencia <b>como dice la ley</b>.', exit:'Salir del almacén',
+      opts:[ {t:'Tirar hacia dentro', why:'Con la gente empujando para salir, una puerta que abre hacia dentro se bloquea.'},
+             {t:'Empujar hacia fuera', ok:true},
+             {t:'Deslizarla (corredera)', why:'Las puertas de emergencia no pueden ser correderas ni giratorias.'} ] },
+  rooms: [
+    { id:'elec', key:'1', name:'Cuadro eléctrico', short:'Eléctrico',
+      learn:'Para trabajar sin tensión: cortar, bloquear, verificar, poner a tierra y en cortocircuito, y señalizar.', source:'INSST · Riesgo eléctrico' },
+    { id:'rail', key:'2', name:'Altillo', short:'Altillo',
+      learn:'Barandilla de 90 cm como mínimo; obligatoria si la caída es de 2 m o más.', source:'RD 486/1997 · Anexo I, ap. 3' },
+    { id:'fire', key:'3', name:'Papelera ardiendo', short:'Fuego',
+      learn:'El fuego necesita combustible, comburente, foco de ignición y reacción en cadena. Si quitas uno, se apaga.', source:'INSST · Seguridad contra incendios' },
+    { id:'path', key:'4', name:'Pasillo bloqueado', short:'Pasillo',
+      learn:'Las vías de evacuación tienen que estar señalizadas y libres de obstáculos, y las puertas de emergencia no pueden estar cerradas con llave.', source:'RD 486/1997 · Anexo I, ap. 10 · Anexo II' }
+  ],
+  },
+  taller: { id:'taller', title:'Escapa del taller de informática', place:'el taller', key:'2', best:'escapa-best-taller',
+    blurb:'El taller donde se reparan los equipos: un rack ardiendo, un ambiente que no cumple, una estantería sobrecargada y una mesa llena de fallos.',
+    tags:['Extintores','Ambiente','Almacenaje','Orden'],
+    extra:{ id:'kit', label:'Extra: botiquín', name:'Botiquín (extra)', stat:'Extra botiquín', hint:'La prueba del <b>botiquín</b> es opcional y suma tiempo.', learn:()=>GAME.kit.learn, source:()=>GAME.kit.source },
+    door:{ title:'Puerta exterior', learn:'Las puertas exteriores tienen que medir 80 cm de ancho como mínimo, y los pasillos, 1 m.', source:'RD 486/1997 · Anexo I, ap. 5',
+      q:'Última pregunta antes de salir: ¿qué <b>ancho mínimo</b> tiene que tener una puerta exterior como esta?', exit:'Salir del taller',
+      opts:[ {t:'50 cm', why:'Se queda corta: la ley pide 80 cm como mínimo.'},
+             {t:'80 cm', ok:true},
+             {t:'2 metros', why:'No hace falta tanto: el mínimo son 80 cm.'} ] },
+    rooms: [
+      { id:'co2', key:'1', name:'Rack en llamas', short:'Rack',
+        learn:'Para un fuego en equipos eléctricos, extintor de CO₂. Nunca agua ni espuma si hay tensión.', source:'Universidad de Huelva · Servicio de Prevención: extintores' },
+      { id:'clima', key:'2', name:'Termostato', short:'Clima',
+        learn:'Trabajo sedentario: 17–27 °C. Humedad del 30 al 70 % (50 % como mínimo con electricidad estática). Exigencia visual alta: 500 lux como mínimo.', source:'RD 486/1997 · Anexo III, ap. 3 · Anexo IV, ap. 3' },
+      { id:'shelf', key:'3', name:'Estantería', short:'Estante',
+        learn:'Lo más pesado, en los estantes de abajo; sin sobrecargar y con la estantería anclada.', source:'INSST · Almacenamiento de materiales' },
+      { id:'hunt', key:'4', name:'Mesa de reparación', short:'Mesa',
+        learn:'Equipos desenchufados antes de abrirlos, sin regletas encadenadas ni cables en el paso, extintores a mano y cristales señalizados.', source:'RD 486/1997 · Anexos I y II · INSST · Riesgo eléctrico' }
+    ] }
+};
+let SC = SCENES.almacen;
 
 /* ======================= ESTADO ======================= */
 const $ = s => document.querySelector(s);
 const stage = $('#stage');
-function fresh(){ return { screen:'intro', left:GAME.seconds, running:false, paused:false, digits:{}, fails:0, sound:true, open:null, unlocked:false, bonus:null }; }
+function fresh(){ return { screen:'intro', scene:SC.id, left:GAME.seconds, running:false, paused:false, digits:{}, code:null, fails:0, sound:true, open:null, unlocked:false, bonus:null }; }
 let S = fresh();
 let M = {}; // estado del minijuego abierto
 
@@ -389,24 +552,24 @@ function penalize(){ S.fails++; S.left=Math.max(0,S.left-GAME.penalty); SFX.ko()
 
 /* ======================= HUD ======================= */
 function drawHud(){
-  $('#slots').innerHTML=GAME.rooms.map(r=>{const d=S.digits[r.id];return `<div class="slot ${d!=null?'on':''}" data-id="${r.id}"><b>${d!=null?d:'·'}</b><span>${r.short}</span></div>`}).join('');
+  $('#slots').innerHTML=SC.rooms.map(r=>{const d=S.digits[r.id];return `<div class="slot ${d!=null?'on':''}" data-id="${r.id}"><b>${d!=null?d:'·'}</b><span>${r.short}</span></div>`}).join('');
   const n=Object.keys(S.digits).length;
-  $('#progress').innerHTML=`Cifras<b>${n} / ${GAME.rooms.length}</b>`;
+  $('#progress').innerHTML=`Cifras<b>${n} / ${SC.rooms.length}</b>`;
   $('#lock').classList.toggle('open',S.unlocked);
-  document.body.classList.toggle('alarm',S.screen==='lose'); document.body.classList.toggle('free',S.screen==='win');
+  document.body.classList.toggle('picking',S.screen==='intro'); document.body.classList.toggle('alarm',S.screen==='lose'); document.body.classList.toggle('free',S.screen==='win');
 }
 
 /* ======================= DIBUJOS ======================= */
 const ICONS={
- boxes:`<svg viewBox="0 0 100 120"><rect x="6" y="62" width="88" height="56" fill="#B9824B" stroke="#7A5428" stroke-width="3"/><rect x="18" y="12" width="64" height="52" fill="#C99258" stroke="#7A5428" stroke-width="3"/><rect x="45" y="62" width="10" height="56" fill="#E0B07A"/><rect x="45" y="12" width="10" height="52" fill="#E0B07A"/></svg>`,
- cable:`<svg viewBox="0 0 120 50"><rect x="4" y="22" width="58" height="18" rx="5" fill="#E8E4DA" stroke="#555" stroke-width="2"/><rect x="66" y="26" width="46" height="14" rx="5" fill="#E8E4DA" stroke="#555" stroke-width="2"/><g fill="#111"><rect x="12" y="14" width="9" height="10"/><rect x="27" y="14" width="9" height="10"/><rect x="42" y="14" width="9" height="10"/><rect x="74" y="18" width="8" height="9"/></g><path d="M62 32 C64 32 64 33 66 33 M16 14 C10 0 0 6 -4 2 M31 14 C34 2 50 0 56 -4 M46 14 C56 4 70 6 80 -2 M112 33 C120 30 124 20 128 16" stroke="#111" stroke-width="3" fill="none"/><path d="M58 4l7 9-5 1 7 10-11-9 5-1z" fill="#F2C230"/></svg>`,
- cart:`<svg viewBox="0 0 110 110"><rect x="8" y="30" width="80" height="50" rx="4" fill="#3B7BD6"/><rect x="16" y="10" width="34" height="24" fill="#C99258" stroke="#7A5428" stroke-width="2"/><rect x="52" y="16" width="30" height="18" fill="#B9824B" stroke="#7A5428" stroke-width="2"/><path d="M88 36h14" stroke="#9AA3B2" stroke-width="5"/><circle cx="24" cy="94" r="10" fill="#222" stroke="#666" stroke-width="3"/><circle cx="74" cy="94" r="10" fill="#222" stroke="#666" stroke-width="3"/></svg>`,
- box:`<svg viewBox="0 0 100 100"><rect x="6" y="20" width="88" height="76" fill="#C99258" stroke="#7A5428" stroke-width="3"/><rect x="20" y="4" width="60" height="40" rx="3" fill="#20242C" stroke="#555" stroke-width="3"/><rect x="26" y="9" width="48" height="28" fill="#3B7BD6" opacity=".6"/><rect x="45" y="20" width="10" height="76" fill="#E0B07A"/></svg>`,
- ext:`<svg viewBox="0 0 40 110"><rect x="8" y="22" width="24" height="84" rx="10" fill="#D2252F"/><rect x="13" y="8" width="14" height="16" fill="#333"/><path d="M27 12h10v6" stroke="#333" stroke-width="4" fill="none"/><rect x="11" y="50" width="18" height="22" fill="#fff" opacity=".85"/></svg>`,
- sign:`<svg viewBox="0 0 140 60"><rect x="0" y="0" width="140" height="60" rx="6" fill="#1E9A5B"/><circle cx="40" cy="14" r="6" fill="#fff"/><path d="M36 22l-8 14h5l4-6 5 4v10h5V34l-5-6 3-4 4 4h8v-4h-6l-6-6z" fill="#fff"/><path d="M70 30h44m0 0-10-8m10 8-10 8" stroke="#fff" stroke-width="6" fill="none" stroke-linecap="round"/></svg>`
+ boxes:`<svg viewBox="0 0 100 120" aria-hidden="true"><rect x="6" y="62" width="88" height="56" fill="#B9824B" stroke="#7A5428" stroke-width="3"/><rect x="18" y="12" width="64" height="52" fill="#C99258" stroke="#7A5428" stroke-width="3"/><rect x="45" y="62" width="10" height="56" fill="#E0B07A"/><rect x="45" y="12" width="10" height="52" fill="#E0B07A"/></svg>`,
+ cable:`<svg viewBox="0 0 120 50" aria-hidden="true"><rect x="4" y="22" width="58" height="18" rx="5" fill="#E8E4DA" stroke="#555" stroke-width="2"/><rect x="66" y="26" width="46" height="14" rx="5" fill="#E8E4DA" stroke="#555" stroke-width="2"/><g fill="#111"><rect x="12" y="14" width="9" height="10"/><rect x="27" y="14" width="9" height="10"/><rect x="42" y="14" width="9" height="10"/><rect x="74" y="18" width="8" height="9"/></g><path d="M62 32 C64 32 64 33 66 33 M16 14 C10 0 0 6 -4 2 M31 14 C34 2 50 0 56 -4 M46 14 C56 4 70 6 80 -2 M112 33 C120 30 124 20 128 16" stroke="#111" stroke-width="3" fill="none"/><path d="M58 4l7 9-5 1 7 10-11-9 5-1z" fill="#F2C230"/></svg>`,
+ cart:`<svg viewBox="0 0 110 110" aria-hidden="true"><rect x="8" y="30" width="80" height="50" rx="4" fill="#3B7BD6"/><rect x="16" y="10" width="34" height="24" fill="#C99258" stroke="#7A5428" stroke-width="2"/><rect x="52" y="16" width="30" height="18" fill="#B9824B" stroke="#7A5428" stroke-width="2"/><path d="M88 36h14" stroke="#9AA3B2" stroke-width="5"/><circle cx="24" cy="94" r="10" fill="#222" stroke="#666" stroke-width="3"/><circle cx="74" cy="94" r="10" fill="#222" stroke="#666" stroke-width="3"/></svg>`,
+ box:`<svg viewBox="0 0 100 100" aria-hidden="true"><rect x="6" y="20" width="88" height="76" fill="#C99258" stroke="#7A5428" stroke-width="3"/><rect x="20" y="4" width="60" height="40" rx="3" fill="#20242C" stroke="#555" stroke-width="3"/><rect x="26" y="9" width="48" height="28" fill="#3B7BD6" opacity=".6"/><rect x="45" y="20" width="10" height="76" fill="#E0B07A"/></svg>`,
+ ext:`<svg viewBox="0 0 40 110" aria-hidden="true"><rect x="8" y="22" width="24" height="84" rx="10" fill="#D2252F"/><rect x="13" y="8" width="14" height="16" fill="#333"/><path d="M27 12h10v6" stroke="#333" stroke-width="4" fill="none"/><rect x="11" y="50" width="18" height="22" fill="#fff" opacity=".85"/></svg>`,
+ sign:`<svg viewBox="0 0 140 60" aria-hidden="true"><rect x="0" y="0" width="140" height="60" rx="6" fill="#1E9A5B"/><circle cx="40" cy="14" r="6" fill="#fff"/><path d="M36 22l-8 14h5l4-6 5 4v10h5V34l-5-6 3-4 4 4h8v-4h-6l-6-6z" fill="#fff"/><path d="M70 30h44m0 0-10-8m10 8-10 8" stroke="#fff" stroke-width="6" fill="none" stroke-linecap="round"/></svg>`
 };
 
-const ROOM_SVG=`<svg viewBox="0 0 1600 900" aria-hidden="true" preserveAspectRatio="xMidYMid slice">
+const ROOM_SVG=`<svg viewBox="0 0 1600 900" role="img" aria-label="Almacén a oscuras con la luz de emergencia. A la izquierda, un cuadro eléctrico con la señal de riesgo eléctrico y un cable suelto. Al lado, un altillo con escalera y un trabajador arriba, sin barandilla. En el centro, una papelera ardiendo. Abajo, cajas y un carro que bloquean el pasillo. En la pared, un panel con cuatro señales de seguridad. A la derecha, la puerta de emergencia, cerrada con candado, bajo la señal de salida." preserveAspectRatio="xMidYMid slice">
  <defs><linearGradient id="w" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#202734"/><stop offset="1" stop-color="#181D27"/></linearGradient>
  <linearGradient id="f" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#171C25"/><stop offset="1" stop-color="#0E1117"/></linearGradient>
  <radialGradient id="fl" cx=".5" cy="1" r=".8"><stop offset="0" stop-color="#F2C230" stop-opacity=".55"/><stop offset="1" stop-color="#F2C230" stop-opacity="0"/></radialGradient></defs>
@@ -446,7 +609,7 @@ const ROOM_SVG=`<svg viewBox="0 0 1600 900" aria-hidden="true" preserveAspectRat
  <path d="M1488 452 v-14 a14 14 0 0 1 28 0 v14" fill="none" stroke="#C9CED8" stroke-width="6"/><rect x="1480" y="450" width="44" height="40" rx="6" fill="#F2C230"/>
 </svg>`;
 
-const DOOR_SVG=`<svg viewBox="0 0 300 420" aria-label="Puerta de salida de emergencia">
+const DOOR_SVG=`<svg viewBox="0 0 300 420" role="img" aria-label="Puerta de salida de emergencia">
   <rect class="glow" x="20" y="60" width="260" height="350" fill="#7BE0A8"/>
   <rect x="10" y="50" width="280" height="360" fill="none" stroke="#3A4252" stroke-width="12"/>
   <rect x="40" y="6" width="220" height="40" rx="6" fill="#1E9A5B"/>
@@ -457,7 +620,9 @@ const DOOR_SVG=`<svg viewBox="0 0 300 420" aria-label="Puerta de salida de emerg
 </svg>`;
 
 // zonas pulsables sobre la sala (porcentajes del dibujo 1600×900)
-const HOTS=[
+SCENES.almacen.svg=ROOM_SVG;
+SCENES.almacen.art=ICONS.boxes;
+SCENES.almacen.hots=[
   {id:'elec', x:3.5,y:14,w:13.5,h:34, up:true},
   {id:'rail', x:19,y:24,w:23,h:46},
   {id:'fire', x:43,y:60,w:16,h:31},
@@ -466,52 +631,112 @@ const HOTS=[
   {id:'signs', x:70.8,y:22.2,w:12.6,h:20, bonus:true}
 ];
 
+const RACK_ICON=`<svg viewBox="0 0 100 100" aria-hidden="true"><rect x="22" y="14" width="56" height="78" rx="6" fill="#14161C" stroke="#4A5363" stroke-width="4"/>${[0,1,2,3].map(i=>`<rect x="30" y="${24+i*16}" width="40" height="10" rx="2" fill="#2B313C"/><circle cx="36" cy="${29+i*16}" r="2.5" fill="#7BE0A8"/>`).join('')}<path d="M50 2 C58 14 66 18 64 28 C62 34 56 36 50 36 C43 36 37 33 37 27 C37 21 42 18 45 12 C46 18 48 20 51 21 C49 15 48 9 50 2Z" fill="#D2252F"/></svg>`;
+SCENES.taller.svg=`<svg viewBox="0 0 1600 900" role="img" aria-label="Taller de informática. A la izquierda, un rack de servidores en llamas. Al lado, un termostato y un botiquín en la pared. En el centro, una mesa de reparación con un ordenador, un monitor y regletas en el suelo. A la derecha, una estantería con las cajas pesadas arriba y una señal de peligro, y la puerta de salida, cerrada con candado, bajo la señal de salida." preserveAspectRatio="xMidYMid slice">
+ <defs><linearGradient id="w2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1F2833"/><stop offset="1" stop-color="#171D27"/></linearGradient>
+ <linearGradient id="f2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1A1F29"/><stop offset="1" stop-color="#0E1117"/></linearGradient>
+ <radialGradient id="fl2" cx=".5" cy="1" r=".8"><stop offset="0" stop-color="#F2C230" stop-opacity=".5"/><stop offset="1" stop-color="#F2C230" stop-opacity="0"/></radialGradient></defs>
+ <rect width="1600" height="620" fill="url(#w2)"/><rect y="620" width="1600" height="280" fill="url(#f2)"/>
+ <g stroke="#232A36" stroke-width="2">${Array.from({length:9},(_,i)=>`<line x1="${i*200}" y1="620" x2="${800+(i*200-800)*1.8}" y2="900"/>`).join('')}</g>
+ <!-- rack de servidores ardiendo -->
+ <ellipse cx="190" cy="230" rx="190" ry="120" fill="url(#fl2)"/>
+ <rect x="90" y="180" width="200" height="460" rx="8" fill="#14161C" stroke="#3A4252" stroke-width="6"/><rect x="104" y="200" width="172" height="40" rx="4" fill="#2B313C"/><circle cx="124" cy="220" r="5" fill="#3B7BD6"/><circle cx="142" cy="220" r="5" fill="#7BE0A8"/><rect x="170" y="214" width="90" height="12" rx="3" fill="#14161C"/><rect x="104" y="252" width="172" height="40" rx="4" fill="#2B313C"/><circle cx="124" cy="272" r="5" fill="#7BE0A8"/><circle cx="142" cy="272" r="5" fill="#7BE0A8"/><rect x="170" y="266" width="90" height="12" rx="3" fill="#14161C"/><rect x="104" y="304" width="172" height="40" rx="4" fill="#2B313C"/><circle cx="124" cy="324" r="5" fill="#3B7BD6"/><circle cx="142" cy="324" r="5" fill="#7BE0A8"/><rect x="170" y="318" width="90" height="12" rx="3" fill="#14161C"/><rect x="104" y="356" width="172" height="40" rx="4" fill="#2B313C"/><circle cx="124" cy="376" r="5" fill="#7BE0A8"/><circle cx="142" cy="376" r="5" fill="#7BE0A8"/><rect x="170" y="370" width="90" height="12" rx="3" fill="#14161C"/><rect x="104" y="408" width="172" height="40" rx="4" fill="#2B313C"/><circle cx="124" cy="428" r="5" fill="#3B7BD6"/><circle cx="142" cy="428" r="5" fill="#7BE0A8"/><rect x="170" y="422" width="90" height="12" rx="3" fill="#14161C"/><rect x="104" y="460" width="172" height="40" rx="4" fill="#2B313C"/><circle cx="124" cy="480" r="5" fill="#7BE0A8"/><circle cx="142" cy="480" r="5" fill="#7BE0A8"/><rect x="170" y="474" width="90" height="12" rx="3" fill="#14161C"/><rect x="104" y="512" width="172" height="40" rx="4" fill="#2B313C"/><circle cx="124" cy="532" r="5" fill="#3B7BD6"/><circle cx="142" cy="532" r="5" fill="#7BE0A8"/><rect x="170" y="526" width="90" height="12" rx="3" fill="#14161C"/><rect x="104" y="564" width="172" height="40" rx="4" fill="#2B313C"/><circle cx="124" cy="584" r="5" fill="#7BE0A8"/><circle cx="142" cy="584" r="5" fill="#7BE0A8"/><rect x="170" y="578" width="90" height="12" rx="3" fill="#14161C"/>
+ <path d="M190 40 C220 90 262 112 256 160 C252 192 226 206 190 206 C152 206 126 192 124 162 C122 130 146 112 160 84 C164 108 172 120 186 122 C178 96 176 70 190 40Z" fill="#D2252F"/>
+ <path d="M192 100 C206 124 220 136 218 158 C216 178 206 188 192 188 C176 188 166 178 166 162 C166 146 178 138 184 126 C186 140 190 146 196 148 C192 132 190 116 192 100Z" fill="#F2C230"/>
+ <!-- termostato -->
+ <rect x="350" y="200" width="140" height="110" rx="14" fill="#C9CED8"/><rect x="366" y="216" width="108" height="56" rx="6" fill="#14161C"/>
+ <text x="420" y="256" fill="#FF8A8F" font-family="Oswald,Arial" font-size="34" font-weight="700" text-anchor="middle">31°</text>
+ <circle cx="390" cy="292" r="7" fill="#4A5363"/><circle cx="420" cy="292" r="7" fill="#4A5363"/><circle cx="450" cy="292" r="7" fill="#4A5363"/>
+ <!-- lámpara débil -->
+ <rect x="700" y="0" width="8" height="90" fill="#3A4252"/><path d="M650 90 h108 l-20 34 h-68z" fill="#4A5363"/><ellipse cx="704" cy="128" rx="28" ry="8" fill="#F2C230" opacity=".35"/>
+ <!-- botiquín -->
+ <rect x="590" y="190" width="100" height="84" rx="8" fill="#F4F1E8"/><rect x="628" y="204" width="24" height="56" fill="#1E9A5B"/><rect x="612" y="220" width="56" height="24" fill="#1E9A5B"/>
+ <!-- mesa de reparación -->
+ <rect x="560" y="540" width="480" height="26" rx="4" fill="#5D6676"/><rect x="580" y="566" width="18" height="190" fill="#4A5363"/><rect x="1002" y="566" width="18" height="190" fill="#4A5363"/>
+ <rect x="600" y="410" width="90" height="130" rx="6" fill="#2B313C" stroke="#4A5363" stroke-width="4"/><rect x="612" y="424" width="66" height="70" fill="#1E9A5B" opacity=".5"/>
+ <rect x="740" y="400" width="190" height="120" rx="8" fill="#14161C" stroke="#4A5363" stroke-width="5"/><rect x="752" y="412" width="166" height="92" fill="#3B7BD6" opacity=".5"/><rect x="826" y="520" width="18" height="20" fill="#4A5363"/>
+ <path d="M640 540 C640 640 720 700 900 720 S1100 760 1240 760" stroke="#111" stroke-width="7" fill="none"/>
+ <rect x="760" y="700" width="70" height="18" rx="5" fill="#E8E4DA"/><rect x="836" y="704" width="60" height="16" rx="5" fill="#E8E4DA"/>
+ <!-- estantería sobrecargada -->
+ <rect x="1090" y="200" width="14" height="430" fill="#4A5363"/><rect x="1296" y="200" width="14" height="430" fill="#4A5363"/>
+ ${[250,370,490,610].map(y=>`<rect x="1090" y="${y}" width="220" height="12" fill="#5D6676"/>`).join('')}
+ <path d="M1104 250 Q1200 270 1296 250" stroke="#D2252F" stroke-width="4" fill="none"/>
+ <rect x="1110" y="170" width="84" height="80" fill="#B9824B" stroke="#7A5428" stroke-width="3"/><rect x="1200" y="150" width="90" height="100" fill="#C99258" stroke="#7A5428" stroke-width="3"/>
+ <rect x="1140" y="440" width="60" height="50" fill="#C99258" stroke="#7A5428" stroke-width="3"/>
+ <polygon points="1200,262 1226,306 1174,306" fill="#F2C230" stroke="#14161C" stroke-width="3"/><rect x="1198" y="274" width="5" height="18" fill="#14161C"/><circle cx="1200" cy="299" r="3" fill="#14161C"/>
+ <!-- puerta de emergencia con candado -->
+ <rect x="1340" y="200" width="200" height="420" fill="#0B0E13"/><rect x="1352" y="212" width="176" height="408" fill="#1E9A5B"/><rect x="1352" y="400" width="176" height="14" fill="#167446"/>
+ <rect x="1360" y="126" width="160" height="58" rx="6" fill="#1E9A5B"/><circle cx="1396" cy="144" r="7" fill="#fff"/><path d="M1390 152l-9 16h6l4-6 5 4v10h5v-12l-5-6 3-5 4 4h8v-4h-6l-6-6z" fill="#fff"/><path d="M1424 158h70m0 0-12-9m12 9-12 9" stroke="#fff" stroke-width="6" fill="none" stroke-linecap="round"/>
+ <rect x="1478" y="380" width="40" height="54" rx="6" fill="#C9CED8"/>
+ <path d="M1488 452 v-14 a14 14 0 0 1 28 0 v14" fill="none" stroke="#C9CED8" stroke-width="6"/><rect x="1480" y="450" width="44" height="40" rx="6" fill="#F2C230"/>
+</svg>`;
+SCENES.taller.art=RACK_ICON;
+SCENES.taller.hots=[
+  {id:'co2',   x:4.5,y:3, w:14.5,h:69, low:true},
+  {id:'clima', x:21, y:21,w:10.5,h:14.5, low:true},
+  {id:'shelf', x:67, y:15,w:16, h:56},
+  {id:'hunt',  x:34, y:43,w:31, h:42, low:true},
+  {id:'door',  x:83, y:13,w:15.5,h:57},
+  {id:'kit',   x:36, y:20,w:8,  h:11.5, bonus:true}
+];
+
 /* ======================= PANTALLAS ======================= */
 function go(screen){ closePanel(); M={}; S.screen=screen; render(); }
 function render(){
   drawHud();
   const sc=S.screen;
-  if(sc==='intro'){ stage.innerHTML=`<div class="screen split">
-      <div style="display:grid;gap:clamp(12px,2.2vh,30px)">
+  if(sc==='intro'){ stage.innerHTML=`<div class="screen">
+      <div style="display:grid;gap:clamp(8px,1.4vh,18px)">
         <p class="eyebrow">Condiciones de seguridad · SMR</p>
-        <h1>Escapa del<br>almacén</h1>
-        <p class="lead">El almacén <b>incumple las normas de seguridad</b> y la salida está cerrada con un candado de <b>${GAME.rooms.length} cifras</b>. Explora la sala: cada riesgo que corrijas te da una cifra. Cada fallo resta <b>${GAME.penalty} s</b>. Tienes <b>${fmt(GAME.seconds)}</b>.</p>
-        <button class="btn" id="go" type="button">Entrar al almacén <kbd>Espacio</kbd></button>
-      </div><div class="door">${DOOR_SVG}</div></div>`; $('#go').onclick=startGame; }
+        <h1 style="font-size:clamp(40px,5.6vw,104px)">Elige tu sala</h1>
+        <p class="lead" style="max-width:62ch">Cada sala <b>incumple las normas de seguridad</b> y la salida está cerrada con un candado de <b>4 cifras</b>. Cada riesgo que corrijas te da una cifra; cada fallo resta <b>${GAME.penalty} s</b>. Tienes <b>${fmt(GAME.seconds)}</b>, y el código cambia en cada partida.</p></div>
+      <div class="picks">${Object.values(SCENES).map(sc=>`<button type="button" class="pick" data-scene="${sc.id}">
+        <span class="pick-art">${sc.art}</span>
+        <span class="pick-body"><span class="pick-n">Sala ${sc.key}</span><span class="pick-t">${sc.title}</span><span class="pick-d">${sc.blurb}</span>
+        <span class="pick-tags">${sc.tags.map(t=>`<i>${t}</i>`).join('')}</span>
+        <span class="pick-best">${bestOf(sc)}</span>
+        <span class="btn pick-go">Jugar <kbd>${sc.key}</kbd></span></span></button>`).join('')}</div>
+      <p class="legal"><a href="/aviso-legal">Aviso legal</a><a href="/privacidad">Privacidad y cookies</a><a href="https://github.com/Marcos-Dev-Martinez/escapadelalmacen">Código en GitHub</a></p></div>`;
+      document.querySelectorAll('.pick').forEach(b=>b.onclick=()=>startGame(b.dataset.scene)); }
   else if(sc==='room'){ drawRoom(); }
   else if(sc==='win'){ stage.innerHTML=`<div class="screen split">
       <div style="display:grid;gap:clamp(12px,2.2vh,30px)"><p class="eyebrow">Salida despejada</p><h1>¡Has<br>escapado!</h1>
         <div class="stars" aria-label="${stars()} de 3 estrellas">${[1,2,3].map(i=>`<span class="${i<=stars()?'on':''}">★</span>`).join('')}</div>
-        <div class="stats"><div class="stat"><b>${fmt(S.left)}</b><span>Tiempo restante</span></div><div class="stat"><b>${S.fails}</b><span>Fallos</span></div>${S.bonus?`<div class="stat"><b>+${S.bonus}s</b><span>Extra señales</span></div>`:''}</div>
+        <div class="stats"><div class="stat"><b>${fmt(S.left)}</b><span>Tiempo restante</span></div><div class="stat"><b>${S.fails}</b><span>Fallos</span></div>${S.bonus?`<div class="stat"><b>+${S.bonus}s</b><span>${SC.extra.stat}</span></div>`:''}</div>
         <p class="best">${bestLine()}</p>
         <button class="btn" id="go" type="button">Repasar lo aprendido <kbd>Espacio</kbd></button></div>
       <div class="door" id="door">${DOOR_SVG}</div></div>`; $('#go').onclick=()=>go('summary'); setTimeout(()=>$('#door')?.classList.add('open'),350); }
   else if(sc==='lose'){ const n=Object.keys(S.digits).length; stage.innerHTML=`<div class="screen" style="text-align:center;justify-items:center">
       <p class="eyebrow" style="color:var(--stop-soft)">Alarma · tiempo agotado</p><h1 style="color:var(--stop-soft)">No has salido<br>a tiempo</h1>
-      <p class="lead" style="text-align:center">Has conseguido <b>${n} de ${GAME.rooms.length}</b> cifras. En una emergencia real, cada segundo cuenta.</p>
+      <p class="lead" style="text-align:center">Has conseguido <b>${n} de ${SC.rooms.length}</b> cifras. En una emergencia real, cada segundo cuenta.</p>
       <button class="btn" id="go" type="button">Repasar lo aprendido <kbd>Espacio</kbd></button></div>`; $('#go').onclick=()=>go('summary'); }
   else if(sc==='summary'){ stage.innerHTML=`<div class="screen"><p class="eyebrow">Repaso</p><h2>Lo que hemos aprendido</h2>
-      <div class="cards">${GAME.rooms.map(r=>`<article class="card"><span class="n">${r.digit}</span><h3>${r.name}</h3><p>${r.learn}</p><p style="font-size:.85em">${r.source}</p></article>`).join('')}
-      <article class="card"><span class="n">★</span><h3>Señales (extra)</h3><p>${GAME.signs.learn}</p><p style="font-size:.85em">${GAME.signs.source}</p></article>
-      <article class="card"><span class="n">→</span><h3>Puerta de emergencia</h3><p>${GAME.door.learn}</p><p style="font-size:.85em">${GAME.door.source}</p></article></div>
-      <button class="btn" id="again" type="button">Jugar otra vez <kbd>R</kbd></button></div>`; $('#again').onclick=reset; }
+      <div class="cards">${SC.rooms.map(r=>`<article class="card"><span class="n">${dig(r)}</span><h3>${r.name}</h3><p>${r.learn}</p><p style="font-size:.85em">${r.source}</p></article>`).join('')}
+      <article class="card"><span class="n">★</span><h3>${SC.extra.name}</h3><p>${SC.extra.learn()}</p><p style="font-size:.85em">${SC.extra.source()}</p></article>
+      <article class="card"><span class="n">→</span><h3>${SC.door.title}</h3><p>${SC.door.learn}</p><p style="font-size:.85em">${SC.door.source}</p></article></div>
+      <div class="actions"><button class="btn" id="again" type="button">Jugar otra vez <kbd>R</kbd></button><button class="btn ghost" id="other" type="button">Elegir otra sala</button></div></div>`;
+      $('#again').onclick=()=>{ const id=SC.id; reset(); startGame(id); }; $('#other').onclick=reset; }
 }
 
+function bestOf(sc){ let b=null; try{ b=JSON.parse(localStorage.getItem(sc.best)||'null'); }catch(e){} return b?`Tu récord: <b>${fmt(b.left)}</b> restantes`:'Sin jugar todavía'; }
 function stars(){ return S.fails<=1?3:S.fails<=4?2:1; }
 function bestLine(){
-  if(!S.saved){ S.saved=true; let best=null; try{ best=JSON.parse(localStorage.getItem('escapa-best')||'null'); }catch(e){}
+  if(!S.saved){ S.saved=true; let best=null; try{ best=JSON.parse(localStorage.getItem(SC.best)||'null'); }catch(e){}
     S.prevBest=best; const now={left:Math.round(S.left),fails:S.fails}; S.rec=!best||now.left>best.left;
-    if(S.rec){ try{ localStorage.setItem('escapa-best',JSON.stringify(now)); }catch(e){} } }
+    if(S.rec){ try{ localStorage.setItem(SC.best,JSON.stringify(now)); }catch(e){} } }
   if(S.rec) return S.prevBest?`<b>¡Nuevo récord!</b> Superas tu marca anterior (${fmt(S.prevBest.left)} restantes).`:'<b>Récord guardado.</b> Juega otra vez para intentar superarlo.';
   return `Tu récord sigue siendo <b>${fmt(S.prevBest.left)}</b> restantes con ${S.prevBest.fails} fallos.`; }
-function startGame(){ S=Object.assign(fresh(),{sound:S.sound}); S.running=true; audio(); SFX.tap(); musicStart(); go('room'); }
+// 4 cifras distintas al azar: una por prueba
+function newCode(){ const d=[0,1,2,3,4,5,6,7,8,9].sort(()=>Math.random()-.5); return Object.fromEntries(SC.rooms.map((r,i)=>[r.id,d[i]])); }
+const dig=r=>S.code?.[r.id] ?? '·';
+function startGame(id){ SC=SCENES[id]||SCENES.almacen; S=Object.assign(fresh(),{sound:S.sound,scene:SC.id}); S.code=newCode(); S.running=true; audio(); SFX.tap(); musicStart(); go('room'); }
 
 function drawRoom(){
   const n=Object.keys(S.digits).length;
-  stage.innerHTML=`<div style="display:grid;gap:8px;width:100%;justify-items:center"><p class="rotate">Gira el móvil para ver mejor la sala ↻</p><div class="room" id="room">${ROOM_SVG}
-    ${HOTS.map((h,i)=>{const r=GAME.rooms.find(x=>x.id===h.id);const done=r?S.digits[r.id]!=null:(h.bonus&&S.bonus!=null);const label=r?r.name:h.bonus?'Extra: señales':'Salida';
-      return `<button type="button" class="hot ${done?'done':''} ${h.up?'up':''} ${h.bonus?'bonus':''}" data-id="${h.id}" style="left:${h.x}%;top:${h.y}%;width:${h.w}%;height:${h.h}%" aria-label="${label}${done?' (resuelto)':''}"><span class="tag"><kbd>${i+1}</kbd>${label}</span></button>`}).join('')}
-  </div><p class="hint">${n<GAME.rooms.length?`Pulsa los objetos marcados: cada riesgo que corrijas te da <b>una cifra</b> del candado (llevas ${n} de ${GAME.rooms.length}). La prueba de <b>señales</b> es opcional y suma tiempo.`:`¡Ya tienes las ${GAME.rooms.length} cifras! Ve a la <b>salida</b>.`}</p></div>`;
+  stage.innerHTML=`<div style="display:grid;gap:8px;width:100%;justify-items:center"><p class="rotate">Gira el móvil para ver mejor la sala ↻</p><div class="room" id="room">${SC.svg}
+    ${SC.hots.map((h,i)=>{const r=SC.rooms.find(x=>x.id===h.id);const done=r?S.digits[r.id]!=null:(h.bonus&&S.bonus!=null);const label=r?r.name:h.bonus?SC.extra.label:'Salida';
+      return `<button type="button" class="hot ${done?'done':''} ${h.up?'up':''} ${h.low?'low':''} ${h.bonus?'bonus':''}" data-id="${h.id}" style="left:${h.x}%;top:${h.y}%;width:${h.w}%;height:${h.h}%" aria-label="${label}${done?' (resuelto)':''}"><span class="tag"><kbd>${i+1}</kbd>${label}</span></button>`}).join('')}
+  </div><p class="hint">${n<SC.rooms.length?`Pulsa los objetos marcados: cada riesgo que corrijas te da <b>una cifra</b> del candado (llevas ${n} de ${SC.rooms.length}). ${SC.extra.hint}`:`¡Ya tienes las ${SC.rooms.length} cifras! Ve a la <b>salida</b>.`}</p></div>`;
   stage.querySelectorAll('.hot').forEach(b=>b.onclick=()=>openGame(b.dataset.id));
   if(S.open) openGame(S.open,true);
 }
@@ -527,27 +752,28 @@ function panel(title,eyebrow,ins,body){
   return p;
 }
 function closePanel(){ $('#panel')?.remove(); crackleStop(); }
-function leavePanel(){ if(S.paused) return; if(M.take) return M.take(); if(M.done) return; if(M.kind==='signs') S.bonus=M.got*GAME.signs.bonus; S.open=null; M={}; closePanel(); if(S.screen==='room') drawRoom(); }
+function leavePanel(){ if(S.paused) return; if(M.take) return M.take(); if(M.done) return; if(M.kind==='signs') S.bonus=M.got*GAME.signs.bonus; if(M.kind==='co2') sprayStop(); S.open=null; M={}; closePanel(); if(S.screen==='room') drawRoom(); }
+function tip(label,html){ const f=$('#fb'); f.className='fb tip'; f.innerHTML=`<span class="t">${label}</span><span>${html}</span>`; }
 function fb(ok,html){ const f=$('#fb'); f.className='fb '+(ok?'ok':'ko'); f.innerHTML=`<span class="t">${ok?'✓ ¡Correcto!':'✗ No'}</span><span>${html}</span>`; }
 
 function openGame(id,restore){
   if(S.screen!=='room') return;
-  const r=GAME.rooms.find(x=>x.id===id);
-  if(r && S.digits[id]!=null){ M={}; panel(r.name,'Resuelto',`Ya tienes la cifra <b>${r.digit}</b> de esta prueba.`,`<div class="fb ok"><span class="t">✓</span><span>${r.learn}<small>Fuente: ${r.source}</small></span></div>`); S.open=null; return; }
-  if(id==='signs' && S.bonus!=null){ M={}; panel('Señales de seguridad','Prueba extra · hecha',`Ganaste <b>+${S.bonus} s</b> con esta prueba.`,`<div class="fb ok"><span class="t">✓</span><span>${GAME.signs.learn}<small>Fuente: ${GAME.signs.source}</small></span></div>`); S.open=null; return; }
+  const r=SC.rooms.find(x=>x.id===id);
+  if(r && S.digits[id]!=null){ M={}; panel(r.name,'Resuelto',`Ya tienes la cifra <b>${dig(r)}</b> de esta prueba.`,`<div class="fb ok"><span class="t">✓</span><span>${r.learn}<small>Fuente: ${r.source}</small></span></div>`); S.open=null; return; }
+  if(id===SC.extra.id && S.bonus!=null){ M={}; panel(SC.extra.name,'Prueba extra · hecha',`Ganaste <b>+${S.bonus} s</b> con esta prueba.`,`<div class="fb ok"><span class="t">✓</span><span>${SC.extra.learn()}<small>Fuente: ${SC.extra.source()}</small></span></div>`); S.open=null; return; }
   S.open=id; if(!restore) SFX.tap();
-  ({elec:gElec,rail:gRail,fire:gFire,path:gPath,door:gDoor,signs:gSigns})[id]();
+  ({elec:gElec,rail:gRail,fire:gFire,path:gPath,door:gDoor,signs:gSigns,co2:gCo2,clima:gClima,shelf:gShelf,hunt:gHunt,kit:gKit})[id]();
 }
 function win(id){
-  const r=GAME.rooms.find(x=>x.id===id); SFX.ok(); M.done=false;
+  const r=SC.rooms.find(x=>x.id===id); SFX.ok(); M.done=false;
   fb(true,`${r.learn}<small>Fuente: ${r.source}</small>`);
-  $('#act').innerHTML=`<div class="prize">Cifra conseguida <b id="prize">${r.digit}</b></div><button class="btn green" type="button" id="take">Guardar la cifra <kbd>Espacio</kbd></button>`;
+  $('#act').innerHTML=`<div class="prize">Cifra conseguida <b id="prize">${dig(r)}</b></div><button class="btn green" type="button" id="take">Guardar la cifra <kbd>Espacio</kbd></button>`;
   M.done=true; M.take=()=>takeDigit(r); $('#take').onclick=M.take; $('#take').focus();
 }
 function takeDigit(r){
   if(S.digits[r.id]!=null) return;
-  const from=$('#prize').getBoundingClientRect(); S.digits[r.id]=r.digit; S.open=null; M={};
-  const fly=document.createElement('div'); fly.className='fly'; fly.textContent=r.digit; fly.style.fontSize=getComputedStyle($('#prize')).fontSize;
+  const from=$('#prize').getBoundingClientRect(); S.digits[r.id]=dig(r); S.open=null; M={};
+  const fly=document.createElement('div'); fly.className='fly'; fly.textContent=dig(r); fly.style.fontSize=getComputedStyle($('#prize')).fontSize;
   fly.style.left=from.left+'px'; fly.style.top=from.top+'px'; document.body.appendChild(fly);
   closePanel(); drawHud();
   const to=document.querySelector(`.slot[data-id="${r.id}"] b`).getBoundingClientRect();
@@ -581,7 +807,7 @@ function pickRule(b){
 /* 2 · Altillo: subir la barandilla hasta el mínimo legal */
 function railSVG(cm){
   const px=Math.round(cm*1.4), top=200-px;
-  return `<svg viewBox="0 0 420 300" aria-label="Altillo con barandilla de ${cm} cm">
+  return `<svg viewBox="0 0 420 300" role="img" aria-label="Altillo con barandilla de ${cm} cm">
     <rect x="0" y="292" width="420" height="8" fill="#2E3747"/><rect x="20" y="200" width="300" height="18" fill="#3A4252"/><rect x="40" y="218" width="14" height="74" fill="#4A5363"/><rect x="290" y="218" width="14" height="74" fill="#4A5363"/>
     <g transform="translate(130 108)"><circle cx="16" cy="12" r="12" fill="#E9C6A0"/><path d="M3 7 Q16 -8 29 7Z" fill="#F2C230"/><rect x="4" y="26" width="24" height="38" rx="7" fill="#3B7BD6"/><rect x="6" y="62" width="8" height="30" fill="#2B313C"/><rect x="18" y="62" width="8" height="30" fill="#2B313C"/></g>
     <g fill="#F2C230"><rect x="300" y="${top}" width="8" height="${px}"/><rect x="230" y="${top}" width="8" height="${px}"/><rect x="230" y="${top}" width="78" height="8"/><rect x="230" y="${top+px/2}" width="78" height="6"/></g>
@@ -611,10 +837,10 @@ function checkRail(){
 
 /* Extra · Señales: reconocer el tipo de señal (opcional, suma segundos) */
 const SIGN_SVG={
-  pro:`<svg viewBox="0 0 200 200" aria-label="Señal redonda roja con una barra"><circle cx="100" cy="100" r="84" fill="#F4F1E8" stroke="#D2252F" stroke-width="22"/><line x1="42" y1="42" x2="158" y2="158" stroke="#D2252F" stroke-width="22"/><path d="M100 60 C118 86 128 96 126 120 C124 138 112 146 100 146 C86 146 74 138 74 120 C74 104 84 96 90 84 C92 98 96 104 102 104 C98 88 96 76 100 60Z" fill="#14161C"/></svg>`,
-  adv:`<svg viewBox="0 0 200 200" aria-label="Señal triangular amarilla"><polygon points="100,14 190,176 10,176" fill="#F2C230" stroke="#14161C" stroke-width="10" stroke-linejoin="round"/><path d="M104 66l-26 52h22l-10 40 34-58h-22l12-34z" fill="#14161C"/></svg>`,
-  obl:`<svg viewBox="0 0 200 200" aria-label="Señal redonda azul"><circle cx="100" cy="100" r="90" fill="#3B7BD6"/><path d="M52 124 c0-44 22-62 48-62 s48 18 48 62z" fill="#fff"/><rect x="40" y="120" width="120" height="14" rx="7" fill="#fff"/></svg>`,
-  sal:`<svg viewBox="0 0 200 200" aria-label="Señal rectangular verde"><rect x="6" y="30" width="188" height="140" rx="10" fill="#1E9A5B"/><rect x="86" y="50" width="28" height="100" fill="#fff"/><rect x="50" y="86" width="100" height="28" fill="#fff"/></svg>`
+  pro:`<svg viewBox="0 0 200 200" role="img" aria-label="Señal redonda roja con una barra"><circle cx="100" cy="100" r="84" fill="#F4F1E8" stroke="#D2252F" stroke-width="22"/><line x1="42" y1="42" x2="158" y2="158" stroke="#D2252F" stroke-width="22"/><path d="M100 60 C118 86 128 96 126 120 C124 138 112 146 100 146 C86 146 74 138 74 120 C74 104 84 96 90 84 C92 98 96 104 102 104 C98 88 96 76 100 60Z" fill="#14161C"/></svg>`,
+  adv:`<svg viewBox="0 0 200 200" role="img" aria-label="Señal triangular amarilla"><polygon points="100,14 190,176 10,176" fill="#F2C230" stroke="#14161C" stroke-width="10" stroke-linejoin="round"/><path d="M104 66l-26 52h22l-10 40 34-58h-22l12-34z" fill="#14161C"/></svg>`,
+  obl:`<svg viewBox="0 0 200 200" role="img" aria-label="Señal redonda azul"><circle cx="100" cy="100" r="90" fill="#3B7BD6"/><path d="M52 124 c0-44 22-62 48-62 s48 18 48 62z" fill="#fff"/><rect x="40" y="120" width="120" height="14" rx="7" fill="#fff"/></svg>`,
+  sal:`<svg viewBox="0 0 200 200" role="img" aria-label="Señal rectangular verde"><rect x="6" y="30" width="188" height="140" rx="10" fill="#1E9A5B"/><rect x="86" y="50" width="28" height="100" fill="#fff"/><rect x="50" y="86" width="100" height="28" fill="#fff"/></svg>`
 };
 function gSigns(){
   const order=GAME.signs.list.map(x=>x.id).sort(()=>Math.random()-.5);
@@ -644,7 +870,7 @@ function pickSign(b){
     $('#act').innerHTML=`<button class="btn green" type="button" id="take">Volver a la sala <kbd>Espacio</kbd></button>`;
     M.take=()=>{ S.open=null; M={}; closePanel(); drawRoom(); }; $('#take').onclick=M.take; $('#take').focus(); }, ok?650:1100);
 }
-function bonusFlash(){ const p=$('#pen'); p.textContent=`+${GAME.signs.bonus} s`; p.classList.add('show','plus'); clearTimeout(p._t); p._t=setTimeout(()=>p.classList.remove('show','plus'),1300); }
+function bonusFlash(n=GAME.signs.bonus){ const p=$('#pen'); p.textContent=`+${n} s`; p.classList.add('show','plus'); clearTimeout(p._t); p._t=setTimeout(()=>p.classList.remove('show','plus'),1300); }
 
 /* 3 · Papelera ardiendo: marcar los 4 elementos del fuego */
 const FIRE_SVG=`<svg viewBox="0 0 200 240" aria-hidden="true"><g class="flames">
@@ -673,36 +899,298 @@ function checkFire(){
     fb(false,`Llevas <b>${good} de 4</b> bien${bad?` y <b>${bad}</b> que no son elementos del fuego`:''}.`); }
 }
 
-/* 4 · Pasillo bloqueado: quitar los obstáculos y dejar lo que debe quedarse */
-function gPath(){
-  M={kind:'path',left:GAME.path.filter(o=>o.bad).length};
-  panel('Despeja la vía de evacuación','Pasillo bloqueado · emergencias',
-    'Si hay un incendio, este pasillo es la salida. Pulsa para <b>retirar lo que estorba</b>, pero ojo: hay cosas que <b>deben quedarse</b>. Teclas 1–6.',
-    `<div class="corridor" id="cor"><div class="lane"></div><div class="exit"></div>
-      ${GAME.path.map((o,k)=>`<button type="button" class="obj" data-k="${k}" style="left:${o.x}%;top:${o.y}%;width:${o.w}%;height:${o.h}%" aria-label="${o.label}"><span class="n">${k+1}</span>${ICONS[o.icon]}</button>`).join('')}</div>`);
-  document.querySelectorAll('#cor .obj').forEach(b=>b.onclick=()=>pickObj(b));
+/* 4 · Pasillo bloqueado: salir entre el humo por la vía de evacuación (plano al azar) */
+const DIRS={u:[-1,0],d:[1,0],l:[0,-1],r:[0,1]};
+const ARROW={r:0,d:90,l:180,u:270};
+const RUN_SVG=`<svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="21" cy="7" r="4.2" fill="#fff"/><path d="M17 14l-6 11h4l3-5 4 3v11h4V21l-4-5 2-3 3 3h6v-3.5h-4.5l-5-5z" fill="#fff"/></svg>`;
+const ARR_SVG=`<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 10h12m0 0-5-5m5 5-5 5" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const PAD_SVG=`<svg class="pad" viewBox="0 0 20 24" aria-hidden="true"><path d="M5 11V7a5 5 0 0 1 10 0v4" fill="none" stroke="#C9CED8" stroke-width="2.6"/><rect x="2" y="10" width="16" height="13" rx="3" fill="#F2C230"/></svg>`;
+function makeMaze(){
+  const C=GAME.maze, RW=C.roomsX, RH=C.roomsY, W=RW*2+1, H=RH*2+1, rnd=n=>Math.floor(Math.random()*n);
+  const g=Array.from({length:H},()=>Array(W).fill('#')), cell=(x,y)=>[2*y+1,2*x+1];
+  const sy=rnd(RH), st=[[0,sy]], seen=new Set([`0,${sy}`]);
+  { const [r,c]=cell(0,sy); g[r][c]='.'; }
+  while(st.length){ const [x,y]=st[st.length-1];
+    const nb=[[1,0],[-1,0],[0,1],[0,-1]].map(([dx,dy])=>[x+dx,y+dy]).filter(([a,b])=>a>=0&&b>=0&&a<RW&&b<RH&&!seen.has(`${a},${b}`));
+    if(!nb.length){ st.pop(); continue; }
+    const [a,b]=nb[rnd(nb.length)]; seen.add(`${a},${b}`);
+    const [r1,c1]=cell(x,y),[r2,c2]=cell(a,b); g[(r1+r2)/2][(c1+c2)/2]='.'; g[r2][c2]='.'; st.push([a,b]); }
+  const S=cell(0,sy); const ey=(sy+1+rnd(RH-1))%RH; const E=[2*ey+1,W-1]; g[E[0]][E[1]]='E';
+  // salida cerrada con llave, cerca del inicio y conectada con él
+  const ly=sy>0?sy-1:sy+1; const L=[2*ly+1,0]; g[L[0]][L[1]]='L'; g[(S[0]+L[0])/2][1]='.';
+  const walk=(ch)=>ch==='.'||ch==='E';
+  const bfs=(from,to)=>{ const prev=new Map([[from.join(),null]]), q=[from];
+    while(q.length){ const [r,c]=q.shift(); if(r===to[0]&&c===to[1]) break;
+      for(const [dr,dc] of Object.values(DIRS)){ const n=[r+dr,c+dc], k=n.join(); if(g[n[0]]?.[n[1]]===undefined||prev.has(k)||!walk(g[n[0]][n[1]])) continue; prev.set(k,[r,c]); q.push(n); } }
+    if(!prev.has(to.join())) return null; const path=[]; for(let p=to; p; p=prev.get(p.join())) path.unshift(p); return path; };
+  const route=bfs(S,E);
+  // abrir atajos: si acortan el camino, se bloquean con un obstáculo
+  const cand=[]; for(let y=0;y<RH;y++) for(let x=0;x<RW;x++){ if(x<RW-1) cand.push([2*y+1,2*x+2]); if(y<RH-1) cand.push([2*y+2,2*x+1]); }
+  cand.sort(()=>Math.random()-.5); const obs={}; let blocked=0, loops=0;
+  for(const [r,c] of cand){ if(g[r][c]!=='#') continue; if(blocked>=C.blocked&&loops>=C.loops) break;
+    g[r][c]='.'; const p=bfs(S,E);
+    if(p.length<route.length){ if(blocked<C.blocked){ g[r][c]='B'; obs[`${r},${c}`]=C.obstacles[blocked%C.obstacles.length]; blocked++; } else g[r][c]='#'; }
+    else if(loops<C.loops) loops++; else g[r][c]='#'; }
+  // señales: en los cruces del camino bueno y cada pocos pasos
+  const sign={}; let since=99;
+  route.slice(0,-1).forEach(([r,c],i)=>{ const [nr,nc]=route[i+1]; const d=Object.keys(DIRS).find(k=>DIRS[k][0]===nr-r&&DIRS[k][1]===nc-c);
+    const ways=Object.values(DIRS).filter(([dr,dc])=>{const ch=g[r+dr]?.[c+dc]; return ch&&ch!=='#';}).length;
+    since++; if(i===0||ways>=3||since>=5){ sign[`${r},${c}`]=d; since=0; } });
+  return {g,W,H,S,E,L,obs,sign,route};
 }
-function pickObj(b){
-  if(M.done||b.classList.contains('gone')) return;
-  const o=GAME.path[+b.dataset.k];
-  if(o.bad){ b.classList.add('gone'); M.left--; SFX.whoosh(); if(o.why) fb(true,o.why); else $('#fb').innerHTML='';
-    if(M.left===0) win('path'); }
-  else { b.classList.remove('shake'); void b.offsetWidth; b.classList.add('shake'); penalize(); fb(false,o.why); }
+function gPath(){
+  // repetir hasta que el plano tenga un recorrido razonable y dos atajos bloqueados
+  let mz; for(let i=0;i<60;i++){ mz=makeMaze(); if(mz.route.length>=22&&mz.route.length<=40&&Object.keys(mz.obs).length>=GAME.maze.blocked) break; }
+  M={kind:'path',mz,pos:mz.S.slice(),seen:new Set(),trail:new Set(),steps:0,told:new Set(),walking:false};
+  reveal();
+  panel('Sal por la vía de evacuación','Pasillo bloqueado · emergencias',
+    'Hay <b>humo</b>: solo ves lo que tienes cerca, pero las <b>señales verdes</b> de evacuación se ven de más lejos. Llega a la salida. Muévete con la <b>cruceta</b>, las flechas o deslizando el dedo: <b>corres hasta el siguiente cruce</b>. También puedes pulsar una casilla.',
+    `<div class="mazewrap"><div class="maze" id="maze" style="--cols:${mz.W}" role="grid" aria-label="Plano del almacén con humo"></div>
+     <div class="dpad" id="dpad">${['u','l','r','d'].map(d=>`<button type="button" class="${d}" data-d="${d}" aria-label="${{u:'Arriba',l:'Izquierda',r:'Derecha',d:'Abajo'}[d]}"><svg viewBox="0 0 20 20" style="transform:rotate(${ARROW[d]}deg)" aria-hidden="true"><path d="M3 10h12m0 0-5-5m5 5-5 5" stroke="#F2C230" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>`).join('')}</div></div>
+     <div class="mazebar"><span><i style="background:var(--warn);border-radius:50%"></i>Tú</span><span><i style="background:var(--go)"></i>Señal o salida</span><span><i style="background:#3A4252"></i>Estantería</span><span>Pasos: <b id="steps">0</b></span></div>`);
+  crackleStart(); drawMaze();
+  const mzEl=$('#maze'); let sx=0, sy=0;
+  mzEl.onpointerdown=e=>{ sx=e.clientX; sy=e.clientY; };
+  mzEl.onpointerup=e=>{ const dx=e.clientX-sx, dy=e.clientY-sy; if(Math.max(Math.abs(dx),Math.abs(dy))>28){ M.swipe=true; runDir(Math.abs(dx)>Math.abs(dy)?(dx>0?'r':'l'):(dy>0?'d':'u')); } };
+  mzEl.onclick=e=>{ if(M.swipe){ M.swipe=false; return; } const c=e.target.closest('.mc'); if(c) goCell(+c.dataset.r,+c.dataset.c); };
+  document.querySelectorAll('#dpad button').forEach(b=>b.onclick=()=>runDir(b.dataset.d));
+}
+function reveal(){ const [r,c]=M.pos, g=M.mz.g;
+  for(let dr=-1;dr<=1;dr++) for(let dc=-1;dc<=1;dc++) M.seen.add(`${r+dr},${c+dc}`);
+  // en línea recta se ve un poco más (hasta 3 casillas o la primera pared)
+  for(const [dr,dc] of Object.values(DIRS)) for(let k=1;k<=3;k++){ const rr=r+dr*k, cc=c+dc*k, ch=g[rr]?.[cc]; if(ch===undefined) break; M.seen.add(`${rr},${cc}`); if(ch==='#'||ch==='B'||ch==='L'||ch==='E') break; }
+  M.trail.add(`${r},${c}`); }
+function visible(r,c){ const k=`${r},${c}`, mz=M.mz, ch=mz.g[r][c];
+  if(M.seen.has(k)) return true;
+  if(ch==='E'||ch==='L') return true;
+  if(mz.sign[k]&&Math.max(Math.abs(r-M.pos[0]),Math.abs(c-M.pos[1]))<=2) return true;
+  return false; }
+function drawMaze(){
+  const mz=M.mz, el=$('#maze'); if(!el) return; let h='';
+  for(let r=0;r<mz.H;r++) for(let c=0;c<mz.W;c++){ const k=`${r},${c}`, ch=mz.g[r][c], vis=visible(r,c), seen=M.seen.has(k);
+    let cls='mc', inner='';
+    if(!vis) cls+=' fog';
+    else if(ch==='#') cls+=' wall';
+    else if(ch==='E'||ch==='L'){ cls+=' ex'; inner=RUN_SVG; if(ch==='L'&&M.told.has('L')){ cls+=' lkd'; } if(ch==='L'&&seen) inner+=PAD_SVG; }
+    else if(ch==='B'){ cls+=' fl ob'; inner=ICONS[mz.obs[k].icon]; }
+    else { cls+=' fl'; if(M.trail.has(k)) cls+=' tr'; }
+    if(vis&&mz.sign[k]&&ch!=='#') inner+=`<span class="ar" style="transform:rotate(${ARROW[mz.sign[k]]}deg)">${ARR_SVG}</span>`;
+    if(r===M.pos[0]&&c===M.pos[1]) cls+=' me';
+    h+=`<div class="${cls}" data-r="${r}" data-c="${c}">${inner}</div>`; }
+  el.innerHTML=h; const st=$('#steps'); if(st) st.textContent=M.steps;
+}
+function bump(r,c){ const d=document.querySelector(`.mc[data-r="${r}"][data-c="${c}"]`); if(d){ d.classList.remove('bump'); void d.offsetWidth; d.classList.add('bump'); } }
+// intenta pisar una casilla vecina; devuelve true si se ha movido
+function stepTo(r,c){
+  const mz=M.mz, ch=mz.g[r]?.[c]; if(ch===undefined||ch==='#') return false;
+  if(ch==='B'){ const o=mz.obs[`${r},${c}`]; M.seen.add(`${r},${c}`); drawMaze(); bump(r,c); tone(110,{d:.18,type:'square',vol:.12});
+    if(!M.told.has(`${r},${c}`)){ M.told.add(`${r},${c}`); tip('Bloqueado',`Pasillo cortado por ${o.name}. Una vía de evacuación tiene que estar <b>siempre libre</b>: toca dar la vuelta.`); }
+    return false; }
+  if(ch==='L'){ M.seen.add(`${r},${c}`);
+    if(!M.told.has('L')){ M.told.add('L'); penalize(); noise({d:.25,vol:.35,freq:2500,q:6}); fb(false,'¡Esta salida de emergencia está <b>cerrada con llave</b>! Nunca puede estarlo: se tiene que poder abrir fácil y al momento. Busca la otra salida.'); }
+    else tone(110,{d:.18,type:'square',vol:.12});
+    drawMaze(); bump(r,c); return false; }
+  M.pos=[r,c]; M.steps++; reveal(); tone(300+Math.random()*60,{d:.03,type:'triangle',vol:.06});
+  if(ch==='E'){ M.done=true; drawMaze(); crackleStop(); SFX.whoosh(); win('path'); return false; }
+  drawMaze(); return true;
+}
+function stepDir(d){ if(M.kind!=='path'||M.done||M.walking) return; const [dr,dc]=DIRS[d]; stepTo(M.pos[0]+dr,M.pos[1]+dc); }
+const BACK={u:'d',d:'u',l:'r',r:'l'};
+// corre en una dirección siguiendo el pasillo (también en las curvas) hasta un cruce, un obstáculo o la salida
+function runDir(d){
+  if(M.kind!=='path'||M.done||M.walking||S.paused) return;
+  const mine=M, g=M.mz.g, open=(r,c)=>{ const x=g[r]?.[c]; return x!==undefined&&x!=='#'; };
+  M.walking=true; let n=0;
+  const go=()=>{ if(M!==mine) return; if(S.paused){ setTimeout(go,200); return; }
+    const [dr,dc]=DIRS[d]; const moved=stepTo(M.pos[0]+dr,M.pos[1]+dc); n++;
+    if(!moved||M.done||n>40){ M.walking=false; return; }
+    const [r,c]=M.pos; const opts=Object.keys(DIRS).filter(k=>k!==BACK[d]&&open(r+DIRS[k][0],c+DIRS[k][1]));
+    if(opts.length!==1){ M.walking=false; return; }
+    d=opts[0]; setTimeout(go,65); };
+  go();
+}
+function goCell(r,c){
+  if(M.kind!=='path'||M.done||M.walking||S.paused) return;
+  const mz=M.mz, ch=mz.g[r][c], k=`${r},${c}`;
+  const toward=()=>{ const dr=r-M.pos[0], dc=c-M.pos[1]; if(!dr&&!dc) return;
+    const a=Math.abs(dc)>=Math.abs(dr)?(dc>0?'r':'l'):(dr>0?'d':'u'), b=Math.abs(dc)>=Math.abs(dr)?(dr>0?'d':dr<0?'u':null):(dc>0?'r':dc<0?'l':null);
+    const ok=k=>{ const x=mz.g[M.pos[0]+DIRS[k][0]]?.[M.pos[1]+DIRS[k][1]]; return x!==undefined&&x!=='#'; };
+    runDir(ok(a)||!b||!ok(b)?a:b); };
+  if(!visible(r,c)||ch==='#') return toward();
+  // camino por casillas ya vistas hasta la de al lado del objetivo
+  const goal=k, known=(rr,cc)=>{ const x=mz.g[rr]?.[cc]; return x!==undefined&&x!=='#'&&x!=='B'&&x!=='L'&&M.seen.has(`${rr},${cc}`); };
+  const prev=new Map([[M.pos.join(),null]]), q=[M.pos.slice()]; let found=null;
+  while(q.length){ const [pr,pc]=q.shift();
+    for(const [dr,dc] of Object.values(DIRS)){ const n=[pr+dr,pc+dc], nk=n.join();
+      if(prev.has(nk)) continue;
+      if(nk===goal){ prev.set(nk,[pr,pc]); found=n; break; }
+      if(!known(n[0],n[1])) continue; prev.set(nk,[pr,pc]); q.push(n); }
+    if(found) break; }
+  if(!found) return toward();
+  const path=[]; for(let p=found; p; p=prev.get(p.join())) path.unshift(p); path.shift();
+  const mine=M; M.walking=true;
+  const next=()=>{ if(M!==mine) return; if(S.paused){ setTimeout(next,200); return; }
+    const p=path.shift(); if(!p){ M.walking=false; return; }
+    const moved=stepTo(p[0],p[1]); if(!moved||!path.length){ M.walking=false; return; } setTimeout(next,85); };
+  next();
+}
+
+
+/* ============ TALLER DE INFORMÁTICA ============ */
+/* 1 · Rack en llamas: elegir el extintor y mantener pulsado para descargarlo */
+const EXT_SVG=(band,txt)=>`<svg viewBox="0 0 60 130" aria-hidden="true"><rect x="16" y="28" width="28" height="98" rx="12" fill="#D2252F"/><rect x="21" y="12" width="18" height="18" fill="#333"/><path d="M36 16h16v8" stroke="#333" stroke-width="5" fill="none"/>
+  <rect x="16" y="62" width="28" height="26" fill="${band}"/><text x="30" y="80" font-family="Oswald,Arial" font-weight="700" font-size="11" text-anchor="middle" fill="${band==='#14161C'?'#fff':'#14161C'}">${txt}</text></svg>`;
+const EXTS=[ {id:'agua',name:'Agua',band:'#3B7BD6',why:'El agua conduce la electricidad: con el rack en tensión, nunca.'},
+             {id:'espuma',name:'Espuma',band:'#F4F1E8',why:'La espuma lleva agua: tampoco sirve si hay tensión.'},
+             {id:'co2',name:'CO₂',band:'#14161C',ok:true} ];
+const RACKFIRE_SVG=`<svg viewBox="0 0 200 260" aria-hidden="true"><g class="flames"><path class="f1" d="M100 0 C140 60 186 90 180 140 C176 180 140 196 100 196 C58 196 22 180 20 142 C18 104 48 84 66 50 C70 82 80 98 98 100 C88 60 84 30 100 0Z" fill="#D2252F"/>
+  <path class="f2" d="M102 70 C122 102 142 120 138 150 C135 174 120 186 102 186 C80 186 66 174 66 154 C66 132 82 120 90 104 C92 122 98 130 106 132 C100 112 98 92 102 70Z" fill="#F2C230"/></g>
+  <g class="gas" fill="#E8EEF6"><circle cx="40" cy="150" r="26"/><circle cx="80" cy="130" r="30"/><circle cx="130" cy="150" r="28"/><circle cx="170" cy="130" r="22"/></g>
+  <rect x="40" y="170" width="120" height="90" rx="6" fill="#14161C" stroke="#4A5363" stroke-width="4"/><rect x="52" y="184" width="96" height="16" rx="3" fill="#2B313C"/><rect x="52" y="208" width="96" height="16" rx="3" fill="#2B313C"/><rect x="52" y="232" width="96" height="16" rx="3" fill="#2B313C"/></svg>`;
+function gCo2(){
+  M={kind:'co2',phase:'pick',fire:100,size:1,spraying:false};
+  panel('Apaga el rack','Rack en llamas · extintores',
+    'Un servidor se ha incendiado y <b>sigue enchufado</b>. Elige el extintor adecuado para equipos eléctricos. Teclas 1–3.',
+    `<div class="co2game"><div class="rackfire" id="rf">${RACKFIRE_SVG}</div>
+     <div style="display:grid;gap:14px" id="co2side"><div class="exts" id="exts">${EXTS.map((x,k)=>`<button type="button" class="ext" data-k="${k}">${EXT_SVG(x.band,x.name)}<span><span class="k">${k+1}</span> ${x.name}</span></button>`).join('')}</div></div></div>`);
+  crackleStart(); SFX.flare();
+  document.querySelectorAll('#exts .ext').forEach(b=>b.onclick=()=>pickExt(b));
+}
+function pickExt(b){
+  if(M.kind!=='co2'||M.phase!=='pick') return; const x=EXTS[+b.dataset.k];
+  if(!x.ok){ b.classList.remove('shake'); void b.offsetWidth; b.classList.add('shake','wrong'); penalize(); SFX.flare();
+    M.size=Math.min(1.5,M.size+.15); $('#rf .flames').style.setProperty('--s',M.size); $('#rf').style.setProperty('--s',M.size); fb(false,x.why); return; }
+  b.classList.add('right'); SFX.ok(); M.phase='spray';
+  tip('CO₂','¡Bien elegido! Ahora <b>mantén pulsado</b> el botón (o la barra espaciadora) para descargar el extintor. Si sueltas, el fuego vuelve a crecer.');
+  $('#co2side').innerHTML=`<button type="button" class="hold" id="hold">Mantén pulsado para descargar<small>o mantén la barra espaciadora</small></button>
+    <div><div class="meterbar" aria-hidden="true"><i id="firebar"></i></div><p class="ins" style="margin-top:6px">Fuego: <b id="firepct">100 %</b></p></div>`;
+  const h=$('#hold');
+  h.onpointerdown=e=>{ e.preventDefault(); try{h.setPointerCapture(e.pointerId)}catch(_){} sprayStart(); };
+  h.onpointerup=h.onpointercancel=h.onpointerleave=()=>sprayStop();
+  h.oncontextmenu=e=>e.preventDefault();
+  const mine=M; let last=performance.now();
+  const loop=now=>{ if(M!==mine||M.phase!=='spray') return; const dt=Math.min(.1,(now-last)/1000); last=now;
+    if(!S.paused){ M.fire=Math.max(0,Math.min(100,M.fire+(M.spraying?-38:14)*dt)); }
+    const sc=.35+.65*M.fire/100*M.size; $('#rf .flames').style.transform=`scale(${sc})`; $('#firebar').style.width=M.fire+'%'; $('#firepct').textContent=Math.round(M.fire)+' %';
+    if(M.fire<=0){ M.phase='done'; sprayStop(); crackleStop(); SFX.extinguish(); $('#rf .flames').style.opacity=0; $('#hold').disabled=true; win('co2'); return; }
+    requestAnimationFrame(loop); };
+  requestAnimationFrame(loop);
+}
+function sprayStart(){ if(M.kind!=='co2'||M.phase!=='spray'||S.paused) return; M.spraying=true; $('#hold')?.classList.add('on'); $('#rf')?.classList.add('spraying');
+  clearInterval(M.hiss); M.hiss=setInterval(()=>noise({d:.16,vol:.22,freq:3500,q:.6,type:'highpass'}),130); }
+function sprayStop(){ if(!M||M.kind!=='co2') return; M.spraying=false; clearInterval(M.hiss); $('#hold')?.classList.remove('on'); $('#rf')?.classList.remove('spraying'); }
+
+/* 2 · Termostato: dejar temperatura, humedad y luz dentro de lo que pide la ley */
+function gClima(){
+  M={kind:'clima',v:Object.fromEntries(GAME.clima.map(d=>[d.id,d.start]))};
+  panel('Ajusta el ambiente','Termostato · condiciones ambientales',
+    'Así es el trabajo en este taller. Ajusta los tres reguladores a lo que pide la ley y pulsa «Comprobar».',
+    `<div class="ctx"><i>Trabajo sentado</i><i>Riesgo de electricidad estática</i><i>Tareas de precisión: exigencia visual alta</i></div>
+     <div class="dials">${GAME.clima.map(d=>`<div class="dial"><label for="d-${d.id}">${d.name}</label>
+       <input type="range" id="d-${d.id}" min="${d.min}" max="${d.max}" step="${d.step}" value="${d.start}"><output id="o-${d.id}" for="d-${d.id}">${d.start}${d.unit}</output></div>`).join('')}</div>
+     <div class="steps"><button class="btn" type="button" id="check">Comprobar <kbd>Intro</kbd></button></div>`);
+  GAME.clima.forEach(d=>{ const i=$('#d-'+d.id), o=$('#o-'+d.id); const upd=()=>{ M.v[d.id]=+i.value; o.textContent=i.value+d.unit; o.className=''; }; i.oninput=()=>{ upd(); tone(260+(+i.value-d.min)/(d.max-d.min)*500,{d:.03,type:'square',vol:.03}); }; });
+  $('#check').onclick=checkClima; $('#d-t').focus();
+}
+function checkClima(){
+  if(M.kind!=='clima'||M.done) return;
+  const bad=GAME.clima.filter(d=>!d.ok(M.v[d.id]));
+  GAME.clima.forEach(d=>{ $('#o-'+d.id).className=d.ok(M.v[d.id])?'good':'bad'; });
+  if(bad.length){ penalize(); fb(false,bad.map(d=>`<b>${d.name}:</b> ${d.bad(M.v[d.id])}.`).join(' ')); return; }
+  document.querySelectorAll('.dial input').forEach(i=>i.disabled=true); $('#check').disabled=true; SFX.key(); win('clima');
+}
+
+/* 3 · Estantería: lo más pesado abajo */
+function gShelf(){
+  const order=GAME.shelf.slice().sort(()=>Math.random()-.5);
+  M={kind:'shelf',order,sel:null,place:{}};
+  panel('Coloca la estantería','Estantería · almacenamiento',
+    'La estantería está sobrecargada por arriba. Coloca cada caja en un estante: <b>pulsa una caja y después el estante</b>. Teclas 1–3 para elegir caja.',
+    `<div class="shelfgame"><div class="grid2" id="boxes" style="grid-template-columns:1fr">${order.map((b,k)=>`<button type="button" class="chip" data-id="${b.id}"><span class="k">${k+1}</span>${ICONS[b.icon]}<span>${b.name} · <b>${b.kg} kg</b></span></button>`).join('')}</div>
+     <div class="levels" id="levels">${['Arriba','En medio','Abajo'].map((l,i)=>`<button type="button" class="level" data-l="${i}" aria-label="Estante ${l.toLowerCase()}"><span class="lab">${l}</span></button>`).join('')}</div></div>`);
+  document.querySelectorAll('#boxes .chip').forEach(b=>b.onclick=()=>pickBox(b));
+  document.querySelectorAll('#levels .level').forEach(b=>b.onclick=()=>putBox(+b.dataset.l));
+}
+function pickBox(b){ if(M.kind!=='shelf'||M.done||b.disabled) return; document.querySelectorAll('#boxes .chip').forEach(x=>x.classList.remove('sel')); b.classList.add('sel'); M.sel=b.dataset.id; SFX.tap();
+  document.querySelectorAll('#levels .level').forEach(l=>l.classList.toggle('armed',!Object.values(M.place).includes(+l.dataset.l))); }
+function putBox(l){
+  if(M.kind!=='shelf'||M.done) return; if(!M.sel){ tip('Primero','Elige antes una caja.'); return; }
+  if(Object.values(M.place).includes(l)){ tip('Ocupado','En ese estante ya hay una caja.'); return; }
+  M.place[M.sel]=l; const box=GAME.shelf.find(x=>x.id===M.sel); const btn=document.querySelector(`#boxes .chip[data-id="${M.sel}"]`); btn.disabled=true; btn.style.opacity=.35; btn.classList.remove('sel'); M.sel=null;
+  const lv=document.querySelector(`#levels .level[data-l="${l}"]`); lv.innerHTML=`<span class="crate">${ICONS[box.icon]}<span>${box.kg} kg</span></span>`; SFX.whoosh();
+  document.querySelectorAll('#levels .level').forEach(x=>x.classList.remove('armed'));
+  if(Object.keys(M.place).length<GAME.shelf.length) return;
+  const byKg=GAME.shelf.slice().sort((a,b)=>a.kg-b.kg); // ligera arriba (0), pesada abajo (2)
+  if(byKg.every((b,i)=>M.place[b.id]===i)) return win('shelf');
+  penalize(); fb(false,'Así la estantería puede volcar o caerte una caja encima. <b>Lo más pesado va abajo</b> y lo más ligero, arriba. Vuelve a colocarlas.');
+  setTimeout(()=>{ if(M.kind!=='shelf'||M.done) return; M.place={}; document.querySelectorAll('#boxes .chip').forEach(b=>{b.disabled=false;b.style.opacity='';}); document.querySelectorAll('#levels .level').forEach((x,i)=>x.innerHTML=`<span class="lab">${['Arriba','En medio','Abajo'][i]}</span>`); },1400);
+}
+
+/* 4 · Mesa de reparación: encontrar los 5 peligros */
+const HUNT_SVG=`<svg viewBox="0 0 1000 520" role="group" aria-label="Mesa de reparación del taller">
+  <rect width="1000" height="360" fill="#1F2833"/><rect y="360" width="1000" height="160" fill="#141921"/>
+  <g class="hz" data-id="cristal" tabindex="0" role="button" aria-label="Puerta de cristal"><rect x="24" y="60" width="150" height="300" fill="#7FB3E8" opacity=".22" stroke="#9AA3B2" stroke-width="6"/><line x1="99" y1="60" x2="99" y2="360" stroke="#9AA3B2" stroke-width="3"/><path d="M40 90 l40 -20 M110 110 l40 -20" stroke="#fff" stroke-width="4" opacity=".4"/><rect class="ring" x="14" y="50" width="170" height="320" rx="10"/></g>
+  <g class="hz" data-id="salida" tabindex="0" role="button" aria-label="Señal de salida"><rect x="34" y="14" width="130" height="38" rx="5" fill="#1E9A5B"/><circle cx="62" cy="26" r="5" fill="#fff"/><path d="M58 32l-7 12h4l4-5 4 3v9h4V40l-4-5 3-4 3 3h7v-3h-5l-5-5z" fill="#fff"/><path d="M92 34h52m0 0-10-7m10 7-10 7" stroke="#fff" stroke-width="5" fill="none" stroke-linecap="round"/><rect class="ring" x="26" y="6" width="146" height="54" rx="8"/></g>
+  <rect x="230" y="270" width="560" height="22" fill="#5D6676"/><rect x="250" y="292" width="16" height="170" fill="#4A5363"/><rect x="754" y="292" width="16" height="170" fill="#4A5363"/>
+  <g class="hz" data-id="pcopen" tabindex="0" role="button" aria-label="Ordenador abierto"><rect x="290" y="130" width="120" height="140" rx="6" fill="#2B313C" stroke="#4A5363" stroke-width="4"/><rect x="302" y="142" width="96" height="116" fill="#123" /><rect x="312" y="152" width="50" height="34" fill="#1E9A5B"/><rect x="312" y="196" width="76" height="12" fill="#F2C230"/><rect x="312" y="216" width="30" height="30" fill="#9AA3B2"/><rect x="200" y="120" width="70" height="150" fill="#3A4252" transform="rotate(-8 235 195)"/>
+     <path d="M410 250 C450 250 460 230 500 230" stroke="#111" stroke-width="5" fill="none"/><rect x="496" y="222" width="22" height="16" rx="3" fill="#E8E4DA"/><path d="M402 140 l10 -16 4 10 8 -14" stroke="#F2C230" stroke-width="4" fill="none"/><rect class="ring" x="190" y="104" width="240" height="176" rx="10"/></g>
+  <g class="hz" data-id="monitor" tabindex="0" role="button" aria-label="Monitor"><rect x="540" y="140" width="190" height="118" rx="8" fill="#14161C" stroke="#4A5363" stroke-width="5"/><rect x="552" y="152" width="166" height="90" fill="#3B7BD6" opacity=".55"/><rect x="626" y="258" width="18" height="14" fill="#4A5363"/><rect class="ring" x="532" y="132" width="206" height="146" rx="10"/></g>
+  <g class="hz" data-id="regletas" tabindex="0" role="button" aria-label="Regletas bajo la mesa"><rect x="430" y="420" width="120" height="26" rx="6" fill="#E8E4DA" stroke="#555" stroke-width="2"/><rect x="560" y="420" width="120" height="26" rx="6" fill="#E8E4DA" stroke="#555" stroke-width="2"/><g fill="#14161C">${[0,1,2,3].map(i=>`<rect x="${444+i*26}" y="428" width="14" height="10" rx="2"/><rect x="${574+i*26}" y="428" width="14" height="10" rx="2"/>`).join('')}</g><path d="M550 433 h10" stroke="#111" stroke-width="5"/><path d="M680 433 C720 433 740 400 790 380" stroke="#111" stroke-width="5" fill="none"/><rect class="ring" x="420" y="406" width="270" height="54" rx="10"/></g>
+  <g class="hz" data-id="cable" tabindex="0" role="button" aria-label="Cable por el suelo"><path d="M300 470 C420 500 560 470 700 500 S900 490 990 470" stroke="#0B0E13" stroke-width="12" fill="none"/><path d="M300 470 C420 500 560 470 700 500 S900 490 990 470" stroke="#7C8594" stroke-width="6" fill="none"/><rect class="ring" x="290" y="456" width="706" height="60" rx="12"/></g>
+  <g class="hz" data-id="papelera" tabindex="0" role="button" aria-label="Papelera"><path d="M180 390 h50 l-6 70 h-38z" fill="#4A5363" stroke="#2B313C" stroke-width="3"/><rect class="ring" x="170" y="380" width="70" height="90" rx="8"/></g>
+  <g class="hz" data-id="ext" tabindex="0" role="button" aria-label="Extintor"><rect x="850" y="160" width="40" height="130" rx="14" fill="#D2252F"/><rect x="858" y="142" width="24" height="20" fill="#333"/><rect x="826" y="250" width="100" height="70" fill="#B9824B" stroke="#7A5428" stroke-width="3"/><rect x="836" y="300" width="80" height="60" fill="#C99258" stroke="#7A5428" stroke-width="3"/><rect x="838" y="330" width="96" height="40" fill="#B9824B" stroke="#7A5428" stroke-width="3"/><rect class="ring" x="816" y="130" width="130" height="248" rx="10"/></g>
+</svg>`;
+function gHunt(){
+  const total=GAME.hunt.filter(h=>h.bad).length;
+  M={kind:'hunt',found:new Set(),total};
+  panel('Busca los peligros','Mesa de reparación · orden y electricidad',
+    `En esta zona del taller hay <b>${total} cosas que incumplen las normas</b>. Púlsalas. Ojo: si marcas algo que está bien, pierdes ${GAME.penalty} s.`,
+    `<div class="hunt" id="hunt">${HUNT_SVG}</div><div class="huntbar"><span>Encontrados: <b id="hfound">0 / ${total}</b></span><span id="hlast"></span></div>`);
+  document.querySelectorAll('#hunt .hz').forEach(g=>{ g.onclick=()=>pickHazard(g); g.onkeydown=e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); e.stopPropagation(); pickHazard(g); } }; });
+}
+function pickHazard(g){
+  if(M.kind!=='hunt'||M.done) return; const h=GAME.hunt.find(x=>x.id===g.dataset.id);
+  if(h.bad){ if(M.found.has(h.id)) return; M.found.add(h.id); g.classList.add('found'); SFX.ok(); $('#hfound').textContent=`${M.found.size} / ${M.total}`;
+    if(M.found.size===M.total) return win('hunt');
+    tip('✓ Encontrado',`<b>${h.name}.</b> ${h.why}`); }
+  else { g.classList.add('miss'); setTimeout(()=>g.classList.remove('miss'),700); penalize(); fb(false,h.why); }
+}
+
+/* Extra · Botiquín: marcar lo que tiene que llevar como mínimo (suma tiempo) */
+function gKit(){
+  const all=[...GAME.kit.right.map(t=>({t,ok:true})),...GAME.kit.wrong.map(t=>({t,ok:false}))].sort(()=>Math.random()-.5);
+  M={kind:'kit',all,sel:new Set()};
+  panel('¿Qué lleva el botiquín?','Prueba extra · primeros auxilios',
+    `Prueba opcional. Marca lo que la ley dice que tiene que haber <b>como mínimo</b> en el botiquín y pulsa «Comprobar». Cada acierto suma <b>+${GAME.kit.bonus} s</b>; fallar no resta. Teclas 1–8.`,
+    `<div class="grid2" id="opts">${all.map((o,k)=>`<button type="button" class="chip" data-k="${k}" aria-pressed="false"><span class="k">${k+1}</span><span>${o.t}</span></button>`).join('')}</div>`);
+  $('#act').innerHTML=`<button class="btn" type="button" id="check">Comprobar <kbd>Intro</kbd></button>`; $('#check').onclick=checkKit;
+  document.querySelectorAll('#opts .chip').forEach(b=>b.onclick=()=>toggleKit(b));
+}
+function toggleKit(b){ if(M.kind!=='kit'||M.done) return; const k=+b.dataset.k; M.sel.has(k)?M.sel.delete(k):M.sel.add(k); b.classList.toggle('sel'); b.setAttribute('aria-pressed',M.sel.has(k)); SFX.tap(); }
+function checkKit(){
+  if(M.kind!=='kit'||M.done) return;
+  if(!M.sel.size){ tip('Primero','Marca al menos una cosa.'); return; }
+  const got=[...M.sel].filter(k=>M.all[k].ok).length;
+  document.querySelectorAll('#opts .chip').forEach(b=>{ const o=M.all[+b.dataset.k]; if(o.ok) b.className='chip right'; else if(M.sel.has(+b.dataset.k)) b.className='chip wrong'; else b.style.opacity=.4; });
+  M.done=true; S.bonus=got*GAME.kit.bonus; S.left+=S.bonus; if(S.bonus){ SFX.ok(); bonusFlash(S.bonus); } else SFX.ko();
+  fb(true,`Has acertado <b>${got} de ${GAME.kit.right.length}</b>: <b>+${S.bonus} s</b>. ${GAME.kit.learn}<small>Fuente: ${GAME.kit.source}</small>`);
+  $('#act').innerHTML=`<button class="btn green" type="button" id="take">Volver a la sala <kbd>Espacio</kbd></button>`;
+  M.take=()=>{ S.open=null; M={}; closePanel(); drawRoom(); }; $('#take').onclick=M.take; $('#take').focus();
 }
 
 /* 5 · Puerta: teclear el código y abrir hacia el lado correcto */
 function gDoor(){
   const n=Object.keys(S.digits).length;
-  if(n<GAME.rooms.length){
-    const miss=GAME.rooms.filter(r=>S.digits[r.id]==null).map(r=>r.name.toLowerCase());
-    M={}; panel('Puerta de emergencia','Salida · candado cerrado',`Al candado le faltan <b>${GAME.rooms.length-n}</b> cifras. Te queda: ${miss.join(', ')}.`,''); S.open=null; return;
+  if(n<SC.rooms.length){
+    const miss=SC.rooms.filter(r=>S.digits[r.id]==null).map(r=>r.name.toLowerCase());
+    M={}; panel('Puerta de emergencia','Salida · candado cerrado',`Al candado le faltan <b>${SC.rooms.length-n}</b> cifras. Te queda: ${miss.join(', ')}.`,''); S.open=null; return;
   }
   if(S.unlocked){ doorPush(); return; }
   M={kind:'code',typed:''};
-  const code=GAME.rooms.map(r=>r.digit).join('');
+  const code=SC.rooms.map(r=>dig(r)).join('');
   panel('Abre el candado','Salida · candado','Teclea el código en el orden del candado de arriba. Puedes usar el teclado numérico.',
     `<div class="doorgame"><div class="keypad" id="kp">${[1,2,3,4,5,6,7,8,9,'⌫',0,'✓'].map(v=>`<button type="button" data-v="${v}">${v}</button>`).join('')}</div>
-     <div style="display:grid;gap:14px"><div class="code" id="code">${'<span></span>'.repeat(GAME.rooms.length)}</div></div></div>`);
+     <div style="display:grid;gap:14px"><div class="code" id="code">${'<span></span>'.repeat(SC.rooms.length)}</div></div></div>`);
   M.code=code; document.querySelectorAll('#kp button').forEach(b=>b.onclick=()=>key(b.dataset.v));
 }
 function key(v){
@@ -720,20 +1208,17 @@ function checkCode(){
 }
 function doorPush(){
   M={kind:'push'};
-  panel('¡Candado abierto!','Salida · última prueba','Ahora abre la puerta de emergencia <b>como dice la ley</b>. Teclas 1–3.',
-    `<div class="grid2" id="opts" style="grid-template-columns:repeat(3,minmax(0,1fr))">
-      <button type="button" class="chip" data-v="in"><span class="k">1</span><span>Tirar hacia dentro</span></button>
-      <button type="button" class="chip" data-v="out"><span class="k">2</span><span>Empujar hacia fuera</span></button>
-      <button type="button" class="chip" data-v="slide"><span class="k">3</span><span>Deslizarla (corredera)</span></button></div>`);
+  panel('¡Candado abierto!','Salida · última prueba',`${SC.door.q} Teclas 1–${SC.door.opts.length}.`,
+    `<div class="grid2" id="opts" style="grid-template-columns:repeat(${SC.door.opts.length},minmax(0,1fr))">
+      ${SC.door.opts.map((o,k)=>`<button type="button" class="chip" data-k="${k}"><span class="k">${k+1}</span><span>${o.t}</span></button>`).join('')}</div>`);
   document.querySelectorAll('#opts .chip').forEach(b=>b.onclick=()=>push(b));
 }
 function push(b){
-  if(M.done) return;
-  if(b.dataset.v==='out'){ M.done=true; b.className='chip right'; SFX.unlock(); fb(true,`${GAME.door.learn}<small>Fuente: ${GAME.door.source}</small>`);
-    S.running=false; $('#act').innerHTML=`<button class="btn green" type="button" id="take">Salir del almacén <kbd>Espacio</kbd></button>`;
+  if(M.done) return; const o=SC.door.opts[+b.dataset.k];
+  if(o.ok){ M.done=true; b.className='chip right'; SFX.unlock(); fb(true,`${SC.door.learn}<small>Fuente: ${SC.door.source}</small>`);
+    S.running=false; $('#act').innerHTML=`<button class="btn green" type="button" id="take">${SC.door.exit} <kbd>Espacio</kbd></button>`;
     M.take=()=>{S.open=null; stopAllSound(); go('win'); SFX.creak(); SFX.fanfare();}; $('#take').onclick=M.take; $('#take').focus(); }
-  else { b.classList.remove('shake'); void b.offsetWidth; b.classList.add('shake','wrong'); penalize();
-    fb(false, b.dataset.v==='in'?'Con la gente empujando para salir, una puerta que abre hacia dentro se bloquea.':'Las puertas de emergencia no pueden ser correderas ni giratorias.'); }
+  else { b.classList.remove('shake'); void b.offsetWidth; b.classList.add('shake','wrong'); penalize(); fb(false,o.why); }
 }
 
 /* ======================= CONTROLES ======================= */
@@ -750,8 +1235,8 @@ let overlay=null, confirmReset=false;
 function closeOverlay(){ overlay?.remove(); overlay=null; confirmReset=false; }
 function showHelp(){ closeOverlay(); overlay=document.createElement('div'); overlay.className='overlay';
   overlay.innerHTML=`<div class="box" role="dialog" aria-label="Atajos"><h2 style="font-size:clamp(26px,2.6vw,44px)">Atajos de teclado</h2><dl class="keys">
-  <dt><kbd>Espacio</kbd></dt><dd>Empezar · guardar la cifra · continuar</dd><dt><kbd>1–6</kbd></dt><dd>En la sala: abrir cada objeto (5 = salida, 6 = extra)</dd>
-  <dt><kbd>1–8</kbd></dt><dd>Dentro de una prueba: elegir opción</dd><dt><kbd>Intro</kbd></dt><dd>Comprobar</dd>
+  <dt><kbd>1 · 2</kbd></dt><dd>En la portada: elegir sala</dd><dt><kbd>Espacio</kbd></dt><dd>Guardar la cifra · continuar · mantener para descargar el extintor</dd><dt><kbd>1–6</kbd></dt><dd>En la sala: abrir cada objeto (5 = salida, 6 = extra)</dd>
+  <dt><kbd>1–8</kbd></dt><dd>Dentro de una prueba: elegir opción</dd><dt><kbd>Intro</kbd></dt><dd>Comprobar</dd><dt><kbd>← ↑ → ↓</kbd></dt><dd>Correr por la vía de evacuación hasta el siguiente cruce</dd>
   <dt><kbd>Esc</kbd></dt><dd>Volver a la sala</dd><dt><kbd>P</kbd></dt><dd>Pausar el tiempo</dd><dt><kbd>S</kbd></dt><dd>Sonido</dd><dt><kbd>F</kbd></dt><dd>Pantalla completa</dd>
   <dt><kbd>R</kbd></dt><dd>Reiniciar</dd></dl><button class="btn" type="button" id="x">Cerrar</button></div>`;
   document.body.appendChild(overlay); $('#x').onclick=closeOverlay; $('#x').focus(); }
@@ -769,26 +1254,32 @@ document.addEventListener('keydown',e=>{
   if(k==='escape'){ if(S.open) leavePanel(); return; }
   if(k==='p') return togglePause(); if(k==='s') return toggleSound(); if(k==='f') return toggleFull(); if(k==='?') return showHelp(); if(k==='r') return askReset();
   if(S.paused) return;
+  if(M.kind==='path'&&k.startsWith('arrow')){ e.preventDefault(); return runDir({arrowup:'u',arrowdown:'d',arrowleft:'l',arrowright:'r'}[k]); }
+  if(k===' '&&M.kind==='co2'&&M.phase==='spray'){ e.preventDefault(); if(!e.repeat) sprayStart(); return; }
   if(k===' '){ if(e.target.tagName==='BUTTON'&&e.target.id!=='take'&&!S.open) return; e.preventDefault();
-    if(S.screen==='intro') return startGame(); if(M.take) return M.take(); if(S.screen==='win'||S.screen==='lose') return go('summary'); return; }
-  if(k==='enter'){ if(M.kind==='rail'){e.preventDefault();return checkRail();} if(M.kind==='fire'){e.preventDefault();return checkFire();} if(M.kind==='code'){e.preventDefault();return checkCode();} return; }
+    if(S.screen==='intro') return; if(M.take) return M.take(); if(S.screen==='win'||S.screen==='lose') return go('summary'); return; }
+  if(k==='enter'){ if(M.kind==='clima'){e.preventDefault();return checkClima();} if(M.kind==='kit'){e.preventDefault();return checkKit();} if(M.kind==='rail'){e.preventDefault();return checkRail();} if(M.kind==='fire'){e.preventDefault();return checkFire();} if(M.kind==='code'){e.preventDefault();return checkCode();} return; }
   if(inRange) return;
   if(k==='backspace'&&M.kind==='code'){ e.preventDefault(); return key('⌫'); }
   if(!/^[0-9]$/.test(k)) return;
   const n=+k;
-  if(S.screen==='room'&&!S.open){ const h=HOTS[n-1]; if(h) openGame(h.id); return; }
+  if(S.screen==='intro'){ const sc=Object.values(SCENES).find(x=>x.key===k); if(sc) startGame(sc.id); return; }
+  if(S.screen==='room'&&!S.open){ const h=SC.hots[n-1]; if(h) openGame(h.id); return; }
   if(M.kind==='elec'){ const b=document.querySelectorAll('#opts .chip')[n-1]; if(b) pickRule(b); }
   else if(M.kind==='signs'){ const b=document.querySelectorAll('#opts .chip')[n-1]; if(b) pickSign(b); }
+  else if(M.kind==='co2'){ const b=document.querySelectorAll('#exts .ext')[n-1]; if(b) pickExt(b); }
+  else if(M.kind==='kit'){ const b=document.querySelectorAll('#opts .chip')[n-1]; if(b) toggleKit(b); }
+  else if(M.kind==='shelf'){ const b=document.querySelectorAll('#boxes .chip')[n-1]; if(b) pickBox(b); }
   else if(M.kind==='fire'){ const b=document.querySelectorAll('#opts .chip')[n-1]; if(b) toggleFire(b); }
-  else if(M.kind==='path'){ const b=document.querySelectorAll('#cor .obj')[n-1]; if(b) pickObj(b); }
   else if(M.kind==='code'){ key(String(n)); }
   else if(M.kind==='push'){ const b=document.querySelectorAll('#opts .chip')[n-1]; if(b) push(b); }
 });
 
+document.addEventListener('keyup',e=>{ if(e.key===' '&&M.kind==='co2') sprayStop(); });
+
 /* conservar la partida si la página se actualiza mientras está abierta */
-function start(data){ if(data&&data.S){ S=Object.assign(fresh(),data.S,{open:null}); if(S.running) S.paused=true; } render(); setPauseLayer(); requestAnimationFrame(tick); }
-window.claude?.hot?.snapshot?.(()=>({S}));
-window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});
+function start(){ render(); setPauseLayer(); requestAnimationFrame(tick); }
+start();
 </script>
 
 </body>

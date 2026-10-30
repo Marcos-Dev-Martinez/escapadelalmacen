@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Página no encontrada · Escapa del almacén</title>
+<meta name="description" content="Esta página no existe.">
+<meta name="robots" content="noindex, follow">
+<meta name="theme-color" content="#0F1218">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="preload" href="/fonts/oswald-700-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/barlow-400-latin.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+@font-face{font-family:"Oswald";font-style:normal;font-weight:500;font-display:swap;src:url(/fonts/oswald-500-latin.woff2) format("woff2")}
+@font-face{font-family:"Oswald";font-style:normal;font-weight:700;font-display:swap;src:url(/fonts/oswald-700-latin.woff2) format("woff2")}
+@font-face{font-family:"Barlow";font-style:normal;font-weight:400;font-display:swap;src:url(/fonts/barlow-400-latin.woff2) format("woff2")}
+@font-face{font-family:"Barlow";font-style:normal;font-weight:600;font-display:swap;src:url(/fonts/barlow-600-latin.woff2) format("woff2")}
+@font-face{font-family:"Barlow";font-style:normal;font-weight:700;font-display:swap;src:url(/fonts/barlow-700-latin.woff2) format("woff2")}
+:root{--night:#0F1218;--panel:#1C2230;--line:#2E3747;--text:#F4F1E8;--muted:#A7AEBB;--warn:#F2C230;--go:#1E9A5B;--go-soft:#7BE0A8;
+  --display:'Oswald','Arial Narrow',Impact,sans-serif;--body:'Barlow','Segoe UI',Arial,sans-serif;color-scheme:dark}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--night);color:var(--text);font-family:var(--body);font-size:clamp(17px,1.1vw + 12px,19px);line-height:1.6;
+  background-image:radial-gradient(ellipse 70% 320px at 50% 0%,rgba(210,37,47,.16),transparent 70%);background-repeat:no-repeat}
+a{color:var(--warn);text-underline-offset:.18em}
+a:hover{text-decoration-thickness:2px}
+:focus-visible{outline:3px solid var(--warn);outline-offset:3px;border-radius:4px}
+.skip{position:absolute;left:16px;top:-60px;background:var(--warn);color:#14161C;font-weight:700;padding:.5em 1em;border-radius:8px;text-decoration:none;z-index:10}
+.skip:focus{top:12px}
+.top{max-width:860px;margin:0 auto;padding:20px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:700;text-transform:uppercase;letter-spacing:.06em;font-size:20px;color:var(--text);text-decoration:none}
+.brand svg{width:26px;height:auto;flex:none}
+.back{font-family:var(--display);font-weight:700;text-transform:uppercase;letter-spacing:.06em;font-size:16px;text-decoration:none;color:#14161C;background:var(--warn);
+  padding:.45em .9em;border-radius:10px}
+.back:hover{background:#FFD65A}
+main{max-width:860px;margin:0 auto;padding:12px 16px 48px}
+.eyebrow{font-family:var(--display);font-weight:500;letter-spacing:.18em;text-transform:uppercase;font-size:15px;color:var(--warn);margin:24px 0 8px;display:flex;gap:.6em;align-items:center}
+.eyebrow::before{content:"";width:1.6em;height:.5em;background:repeating-linear-gradient(-45deg,var(--warn) 0 6px,transparent 6px 12px)}
+h1{font-family:var(--display);font-weight:700;text-transform:uppercase;font-size:clamp(40px,7vw,72px);line-height:1.02;margin:0 0 12px}
+.meta{color:var(--muted);margin:0 0 28px;font-size:.92em}
+h2{font-family:var(--display);font-weight:700;font-size:clamp(24px,3vw,32px);line-height:1.15;margin:44px 0 12px;display:flex;gap:.45em;align-items:baseline}
+h2 .n{color:var(--warn);font-size:.8em}
+h3{font-family:var(--display);font-weight:500;font-size:21px;letter-spacing:.02em;margin:24px 0 6px}
+p,ul,dl{margin:0 0 14px}
+ul{padding-left:1.3em}
+li{margin-bottom:6px}
+li::marker{color:var(--warn)}
+.muted{color:var(--muted)}
+code{font-size:.9em;background:#0B0E13;border:1px solid var(--line);border-radius:6px;padding:.05em .4em}
+.box{background:var(--panel);border:2px solid var(--line);border-left:8px solid var(--go);border-radius:14px;padding:18px 20px;margin:0 0 28px}
+.box p:last-child,.box ul:last-child{margin-bottom:0}
+.box strong{color:var(--go-soft)}
+.data{display:grid;grid-template-columns:auto 1fr;gap:6px 20px;background:var(--panel);border:2px solid var(--line);border-radius:14px;padding:16px 20px}
+.data dt{font-family:var(--display);font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-size:.9em}
+.data dd{margin:0;overflow-wrap:anywhere}
+.keys{width:100%;border-collapse:collapse;margin:0 0 14px;font-size:.95em}
+.keys th,.keys td{text-align:left;vertical-align:top;padding:10px 12px;border-bottom:2px solid var(--line)}
+.keys th{font-family:var(--display);font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-size:.85em}
+.scroll{overflow-x:auto}
+footer{border-top:2px solid var(--line);max-width:860px;margin:0 auto;padding:22px 16px 34px;color:var(--muted);font-size:.9em}
+footer p{margin:0 0 6px}
+footer nav{display:flex;flex-wrap:wrap;gap:6px 18px}
+.tape{height:14px;background:repeating-linear-gradient(-45deg,var(--warn) 0 14px,#111 14px 28px)}
+@media (max-width:520px){.data{grid-template-columns:1fr;gap:2px}.data dd{margin-bottom:10px}}
+</style>
+</head>
+<body>
+<a class="skip" href="#contenido">Saltar al contenido</a>
+<header class="top">
+  <a class="brand" href="/"><svg viewBox="0 0 64 80" aria-hidden="true" focusable="false"><path d="M16 36V22a16 16 0 0 1 32 0v14" fill="none" stroke="#C9CED8" stroke-width="7" stroke-linecap="round"/><rect x="6" y="34" width="52" height="42" rx="8" fill="#F2C230"/><circle cx="32" cy="52" r="6" fill="#14161C"/><rect x="29" y="54" width="6" height="12" rx="3" fill="#14161C"/></svg>Escapa del almacén</a>
+  <a class="back" href="/">Volver al juego</a>
+</header>
+<main id="contenido">
+<p class="eyebrow">Error 404</p>
+<h1>Esta sala no existe</h1>
+<p class="meta">La página que buscas no está en el almacén. Puede que el enlace esté mal escrito o que la página ya no exista.</p>
+<p><a class="back" href="/" style="display:inline-block">Volver al juego</a></p>
+
+</main>
+<footer>
+  <p>© 2026 Marcos Martínez · Escapa del almacén</p>
+  <nav aria-label="Enlaces del pie"><a href="/">Volver al juego</a><a href="/aviso-legal">Aviso legal</a><a href="/privacidad">Privacidad y cookies</a><a href="https://github.com/Marcos-Dev-Martinez/escapadelalmacen">Código en GitHub</a></nav>
+</footer>
+<div class="tape" aria-hidden="true"></div>
+</body>
+</html>
