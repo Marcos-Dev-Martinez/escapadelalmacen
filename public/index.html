@@ -44,7 +44,7 @@ body.free .beacon{background:radial-gradient(ellipse 80% 70% at 85% 50%,rgba(30,
 .tape{position:fixed;left:0;right:0;bottom:0;height:18px;z-index:1;background:repeating-linear-gradient(-45deg,var(--warn) 0 18px,#111 18px 36px)}
 
 .app{position:relative;z-index:2;height:100%;display:grid;grid-template-rows:auto minmax(0,1fr);gap:clamp(8px,1.6vh,22px);
-  padding-block:clamp(10px,2.2vh,28px) 30px;max-width:1760px;margin:0 auto}
+  padding-block:clamp(10px,2.2vh,28px) 66px;max-width:1760px;margin:0 auto}
 .hud{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
 .timer{font-family:var(--display);font-weight:700;font-size:clamp(38px,5.2vw,96px);line-height:1;font-variant-numeric:tabular-nums;min-width:4ch}
 .timer small{display:block;font-family:var(--body);font-size:clamp(12px,1vw,18px);font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
@@ -86,7 +86,7 @@ h2{font-size:clamp(28px,3.4vw,62px)}
 .split{display:grid;grid-template-columns:1.25fr 1fr;gap:clamp(20px,4vw,80px);align-items:center}
 
 /* ---------- sala ---------- */
-.room{position:relative;width:min(100%,calc((100vh - 270px) * 16 / 9));aspect-ratio:16/9;border-radius:18px;overflow:hidden;border:3px solid var(--line);
+.room{position:relative;width:min(100%,calc((100vh - 306px) * 16 / 9));aspect-ratio:16/9;border-radius:18px;overflow:hidden;border:3px solid var(--line);
   box-shadow:0 30px 80px rgba(0,0,0,.5);animation:enter .4s ease-out both}
 .room>svg{position:absolute;inset:0;width:100%;height:100%;display:block}
 .hot{all:unset;position:absolute;cursor:pointer;border-radius:16px;display:grid;place-items:end center}
@@ -231,7 +231,8 @@ input[type=range]:focus-visible{outline:4px solid var(--warn);outline-offset:4px
 .pick-tags i{font-style:normal;font-size:clamp(12px,.9vw,16px);font-weight:700;padding:.2em .6em;border-radius:999px;background:#0B0E13;border:2px solid var(--line)}
 .pick-best{font-size:clamp(13px,1vw,18px);color:var(--muted)} .pick-best b{color:var(--warn)}
 .pick-go{justify-self:start;font-size:clamp(16px,1.4vw,26px);pointer-events:none}
-.legal{margin:0;display:flex;flex-wrap:wrap;gap:4px 22px;font-size:clamp(14px,1vw,17px)}
+.legal{display:none;flex-wrap:wrap;justify-content:flex-end;gap:4px 22px;font-size:clamp(14px,1vw,17px)}
+body.picking .legal{display:flex}
 .legal a{color:var(--muted);text-underline-offset:.2em}
 .legal a:hover{color:var(--text)} .legal a:focus-visible{outline:3px solid var(--warn);outline-offset:3px;border-radius:4px}
 /* rack en llamas */
@@ -324,7 +325,9 @@ input[type=range]:focus-visible{outline:4px solid var(--warn);outline-offset:4px
   .seq{grid-template-columns:1fr 1fr} .door{max-width:240px} .room{width:100%} .hud{justify-content:center}
   .hot .tag{font-size:11px}
 }
-body.picking .lock,body.picking .progress{visibility:hidden}
+body.picking .lock,body.picking .progress{display:none}
+/* fuera de la sala (portada, final, repaso) la página crece y se puede bajar: antes se cortaba sin scroll en portátiles */
+body.flow{overflow:auto} body.flow .app{height:auto;min-height:100%;padding-bottom:84px}
 /* pausa */
 .pauselayer{all:unset;position:fixed;inset:0;z-index:70;cursor:pointer;display:grid;place-content:center;gap:10px;text-align:center;background:rgba(8,10,14,.78);backdrop-filter:blur(3px)}
 .pauselayer span{font-family:var(--display);font-weight:700;text-transform:uppercase;font-size:clamp(44px,7vw,120px);color:var(--warn)}
@@ -394,6 +397,7 @@ body.picking .lock,body.picking .progress{visibility:hidden}
       <div class="slots" id="slots"></div>
     </div>
     <div class="progress" id="progress"></div>
+    <nav class="legal" aria-label="Información legal"><a href="/aviso-legal">Aviso legal</a><a href="/privacidad">Privacidad y cookies</a><a href="https://github.com/Marcos-Dev-Martinez/escapadelalmacen">Código en GitHub</a></nav>
   </header>
   <section class="stage" id="stage" aria-live="polite"></section>
 </main>
@@ -556,7 +560,7 @@ function drawHud(){
   const n=Object.keys(S.digits).length;
   $('#progress').innerHTML=`Cifras<b>${n} / ${SC.rooms.length}</b>`;
   $('#lock').classList.toggle('open',S.unlocked);
-  document.body.classList.toggle('picking',S.screen==='intro'); document.body.classList.toggle('alarm',S.screen==='lose'); document.body.classList.toggle('free',S.screen==='win');
+  document.body.classList.toggle('picking',S.screen==='intro'); document.body.classList.toggle('flow',S.screen!=='room'); document.body.classList.toggle('alarm',S.screen==='lose'); document.body.classList.toggle('free',S.screen==='win');
 }
 
 /* ======================= DIBUJOS ======================= */
@@ -695,8 +699,7 @@ function render(){
         <span class="pick-body"><span class="pick-n">Sala ${sc.key}</span><span class="pick-t">${sc.title}</span><span class="pick-d">${sc.blurb}</span>
         <span class="pick-tags">${sc.tags.map(t=>`<i>${t}</i>`).join('')}</span>
         <span class="pick-best">${bestOf(sc)}</span>
-        <span class="btn pick-go">Jugar <kbd>${sc.key}</kbd></span></span></button>`).join('')}</div>
-      <p class="legal"><a href="/aviso-legal">Aviso legal</a><a href="/privacidad">Privacidad y cookies</a><a href="https://github.com/Marcos-Dev-Martinez/escapadelalmacen">Código en GitHub</a></p></div>`;
+        <span class="btn pick-go">Jugar <kbd>${sc.key}</kbd></span></span></button>`).join('')}</div></div>`;
       document.querySelectorAll('.pick').forEach(b=>b.onclick=()=>startGame(b.dataset.scene)); }
   else if(sc==='room'){ drawRoom(); }
   else if(sc==='win'){ stage.innerHTML=`<div class="screen split">
